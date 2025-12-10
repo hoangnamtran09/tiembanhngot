@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Ingredient, Product, RecipeItem } from '../types';
 import { Plus, Trash2, ChevronRight, Calculator, Check, Search, Edit2 } from 'lucide-react';
 
@@ -12,6 +12,27 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [isAddIngredientOpen, setIsAddIngredientOpen] = useState(false);
+  const [ingredientSearchTerm, setIngredientSearchTerm] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsAddIngredientOpen(false);
+        setIngredientSearchTerm('');
+      }
+    };
+
+    if (isAddIngredientOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isAddIngredientOpen]);
   
   // Edit/Create State
   const [editForm, setEditForm] = useState<Partial<Product>>({
@@ -76,6 +97,8 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
       ...editForm,
       recipe: [...currentRecipe, { ingredientId, quantity: 1 }]
     });
+    setIsAddIngredientOpen(false); // Close dropdown after adding
+    setIngredientSearchTerm(''); // Clear search
   };
 
   const updateIngredientQuantity = (ingredientId: string, quantity: number) => {
@@ -281,23 +304,59 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
                     Công Thức & Costing
                   </h3>
                   
-                  <div className="relative group">
-                     <button className="flex items-center gap-2 text-sm text-rose-600 font-medium hover:bg-rose-50 px-3 py-1.5 rounded-lg transition-colors">
+                  <div className="relative" ref={dropdownRef}>
+                     <button 
+                       onClick={() => setIsAddIngredientOpen(!isAddIngredientOpen)}
+                       className="flex items-center gap-2 text-sm text-rose-600 font-medium hover:bg-rose-50 px-3 py-1.5 rounded-lg transition-colors"
+                     >
                        <Plus size={16} /> Thêm nguyên liệu
                      </button>
-                     {/* Simple Dropdown for adding ingredients */}
-                     <div className="absolute right-0 top-full mt-2 w-64 bg-white shadow-xl rounded-lg border border-gray-100 hidden group-hover:block z-10 p-2 max-h-60 overflow-y-auto">
-                        <input type="text" placeholder="Tìm..." className="w-full text-sm border p-1 rounded mb-2" />
-                        {ingredients.map(ing => (
-                          <div 
-                            key={ing.id} 
-                            onClick={() => addIngredientToRecipe(ing.id)}
-                            className="px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-sm truncate rounded"
-                          >
-                            {ing.name}
+                     
+                     {/* Dropdown for adding ingredients */}
+                     {isAddIngredientOpen && (
+                       <div className="absolute right-0 top-full mt-2 w-64 bg-white shadow-xl rounded-lg border border-gray-100 z-10 p-2 max-h-60 overflow-y-auto">
+                          <input 
+                            type="text" 
+                            placeholder="Tìm nguyên liệu..." 
+                            value={ingredientSearchTerm}
+                            onChange={(e) => setIngredientSearchTerm(e.target.value)}
+                            className="w-full text-sm border border-gray-300 p-2 rounded mb-2 focus:ring-2 focus:ring-rose-500 outline-none"
+                            autoFocus
+                          />
+                          <div className="space-y-1">
+                            {ingredients
+                              .filter(ing => 
+                                ing.name.toLowerCase().includes(ingredientSearchTerm.toLowerCase())
+                              )
+                              .map(ing => {
+                                const alreadyAdded = editForm.recipe?.find(r => r.ingredientId === ing.id);
+                                return (
+                                  <div 
+                                    key={ing.id} 
+                                    onClick={() => !alreadyAdded && addIngredientToRecipe(ing.id)}
+                                    className={`px-3 py-2 rounded cursor-pointer text-sm flex justify-between items-center ${
+                                      alreadyAdded 
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                        : 'hover:bg-rose-50 hover:text-rose-700'
+                                    }`}
+                                  >
+                                    <span className="truncate">{ing.name}</span>
+                                    {alreadyAdded && (
+                                      <span className="text-xs bg-gray-200 px-2 py-0.5 rounded">Đã thêm</span>
+                                    )}
+                                  </div>
+                                );
+                              })}
                           </div>
-                        ))}
-                     </div>
+                          {ingredients.filter(ing => 
+                            ing.name.toLowerCase().includes(ingredientSearchTerm.toLowerCase())
+                          ).length === 0 && (
+                            <div className="text-center text-gray-400 py-4 text-sm">
+                              Không tìm thấy nguyên liệu
+                            </div>
+                          )}
+                       </div>
+                     )}
                   </div>
                </div>
 
