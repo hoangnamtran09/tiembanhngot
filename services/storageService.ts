@@ -85,15 +85,32 @@ export const StorageService = {
 
   saveIngredients: async (ingredients: Ingredient[]): Promise<void> => {
     try {
-      // Step 1: Delete all existing ingredients
-      const { error: deleteError } = await supabase
+      // Get current ingredient IDs
+      const currentIds = ingredients.map(ing => ing.id);
+
+      // Fetch all existing IDs from database
+      const { data: existingData, error: fetchError } = await supabase
         .from('ingredients')
-        .delete()
-        .neq('id', ''); // Delete all (neq '' matches all)
+        .select('id');
 
-      if (deleteError) throw deleteError;
+      if (fetchError) throw fetchError;
 
-      // Step 2: Insert new ingredients (if any)
+      const existingIds = existingData?.map(d => d.id) || [];
+
+      // Find IDs to delete (in DB but not in current array)
+      const idsToDelete = existingIds.filter(id => !currentIds.includes(id));
+
+      // Delete removed ingredients
+      if (idsToDelete.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('ingredients')
+          .delete()
+          .in('id', idsToDelete);
+
+        if (deleteError) throw deleteError;
+      }
+
+      // Upsert current ingredients
       if (ingredients.length > 0) {
         const dbIngredients = ingredients.map(ing => ({
           id: ing.id,
@@ -105,11 +122,21 @@ export const StorageService = {
           min_threshold: ing.minThreshold
         }));
 
-        const { error: insertError } = await supabase
+        const { error: upsertError } = await supabase
           .from('ingredients')
-          .insert(dbIngredients);
+          .upsert(dbIngredients, { onConflict: 'id' });
 
-        if (insertError) throw insertError;
+        if (upsertError) throw upsertError;
+      } else {
+        // If array is empty, delete all
+        if (existingIds.length > 0) {
+          const { error: deleteAllError } = await supabase
+            .from('ingredients')
+            .delete()
+            .in('id', existingIds);
+
+          if (deleteAllError) throw deleteAllError;
+        }
       }
     } catch (err) {
       console.error('Lỗi lưu ingredients:', err);
@@ -147,15 +174,32 @@ export const StorageService = {
 
   saveProducts: async (products: Product[]): Promise<void> => {
     try {
-      // Step 1: Delete all products (CASCADE will delete recipe_items)
-      const { error: deleteError } = await supabase
+      // Get current product IDs
+      const currentIds = products.map(p => p.id);
+
+      // Fetch all existing IDs from database
+      const { data: existingData, error: fetchError } = await supabase
         .from('products')
-        .delete()
-        .neq('id', '');
+        .select('id');
 
-      if (deleteError) throw deleteError;
+      if (fetchError) throw fetchError;
 
-      // Step 2: Insert products (if any)
+      const existingIds = existingData?.map(d => d.id) || [];
+
+      // Find IDs to delete (in DB but not in current array)
+      const idsToDelete = existingIds.filter(id => !currentIds.includes(id));
+
+      // Delete removed products (CASCADE will delete recipe_items)
+      if (idsToDelete.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('products')
+          .delete()
+          .in('id', idsToDelete);
+
+        if (deleteError) throw deleteError;
+      }
+
+      // Upsert current products
       if (products.length > 0) {
         const dbProducts = products.map(p => ({
           id: p.id,
@@ -167,11 +211,19 @@ export const StorageService = {
 
         const { error: prodError } = await supabase
           .from('products')
-          .insert(dbProducts);
+          .upsert(dbProducts, { onConflict: 'id' });
 
         if (prodError) throw prodError;
 
-        // Step 3: Insert recipe items
+        // Delete old recipe items for these products
+        const { error: deleteRecipeError } = await supabase
+          .from('recipe_items')
+          .delete()
+          .in('product_id', currentIds);
+
+        if (deleteRecipeError) throw deleteRecipeError;
+
+        // Insert new recipe items
         const allRecipeItems = products.flatMap(p =>
           p.recipe.map(ri => ({
             product_id: p.id,
@@ -186,6 +238,16 @@ export const StorageService = {
             .insert(allRecipeItems);
 
           if (recipeError) throw recipeError;
+        }
+      } else {
+        // If array is empty, delete all
+        if (existingIds.length > 0) {
+          const { error: deleteAllError } = await supabase
+            .from('products')
+            .delete()
+            .in('id', existingIds);
+
+          if (deleteAllError) throw deleteAllError;
         }
       }
     } catch (err) {
