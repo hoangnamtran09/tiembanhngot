@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Ingredient, Product, RecipeItem } from '../types';
 import { Plus, Trash2, ChevronRight, Calculator, Check, Search, Edit2 } from 'lucide-react';
+import { formatCurrency, formatQuantity } from '../utils/format';
 
 interface RecipeViewProps {
   products: Product[];
@@ -158,9 +159,9 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
                 <p className="text-sm text-gray-500 mt-1">{product.description}</p>
                 <div className="mt-3 space-y-1 text-sm text-gray-600">
                   <p>• Danh mục: <span className="font-medium">{product.category}</span></p>
-                  <p>• Giá bán: <span className="font-medium text-rose-600">{product.sellingPrice.toLocaleString()}đ</span></p>
-                  <p>• Giá vốn: <span className="font-medium">{Math.round(productCost).toLocaleString()}đ</span></p>
-                  <p>• Lợi nhuận: <span className="font-medium text-green-600">{Math.round(profit).toLocaleString()}đ</span></p>
+                  <p>• Giá bán: <span className="font-medium text-rose-600">{formatCurrency(product.sellingPrice)}</span></p>
+                  <p>• Giá vốn: <span className="font-medium">{formatCurrency(Math.round(productCost))}</span></p>
+                  <p>• Lợi nhuận: <span className="font-medium text-green-600">{formatCurrency(Math.round(profit))}</span></p>
                   <p>• Số nguyên liệu: <span className="font-medium">{product.recipe.length} loại</span></p>
                 </div>
                 <p className="text-xs text-amber-600 mt-3 bg-amber-50 p-2 rounded">
@@ -231,7 +232,7 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
                   className="flex justify-between text-sm text-gray-500 cursor-pointer"
                   onClick={() => handleEdit(product)}
                 >
-                  <span>Giá bán: {product.sellingPrice.toLocaleString()}đ</span>
+                  <span>Giá bán: {formatCurrency(product.sellingPrice)}</span>
                   <span className="flex items-center gap-1 text-rose-500">
                      <ChevronRight size={14} />
                   </span>
@@ -373,7 +374,7 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
                       <div key={item.ingredientId} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
                          <div className="flex-1">
                             <p className="font-medium text-gray-800 text-sm">{ing.name}</p>
-                            <p className="text-xs text-gray-500">Giá gốc: {Math.round(unitCost).toLocaleString()}đ / {ing.unit}</p>
+                            <p className="text-xs text-gray-500">Giá gốc: {formatCurrency(Math.round(unitCost))} / {ing.unit}</p>
                          </div>
                          <div className="flex items-center gap-2">
                             <input 
@@ -385,7 +386,7 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
                             <span className="text-sm text-gray-500 w-8">{ing.unit}</span>
                          </div>
                          <div className="text-right w-24">
-                            <p className="text-sm font-medium text-gray-800">{Math.round(itemCost).toLocaleString()}đ</p>
+                            <p className="text-sm font-medium text-gray-800">{formatCurrency(Math.round(itemCost))}</p>
                          </div>
                          <button 
                             onClick={() => removeIngredientFromRecipe(item.ingredientId)}
@@ -401,12 +402,12 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
                <div className="mt-6 pt-4 border-t border-gray-100">
                   <div className="flex justify-between items-center mb-2">
                      <span className="text-gray-600">Tổng giá vốn (Cost):</span>
-                     <span className="text-xl font-bold text-gray-800">{Math.round(totalCost).toLocaleString()} đ</span>
+                     <span className="text-xl font-bold text-gray-800">{formatCurrency(Math.round(totalCost))}</span>
                   </div>
                   <div className="flex justify-between items-center mb-2">
                      <span className="text-gray-600">Lợi nhuận gộp:</span>
                      <span className={`text-lg font-bold ${profitMargin > 50 ? 'text-green-600' : 'text-amber-600'}`}>
-                        {((editForm.sellingPrice || 0) - totalCost).toLocaleString()} đ
+                        {formatCurrency((editForm.sellingPrice || 0) - totalCost)}
                      </span>
                   </div>
                   <div className="flex justify-between items-center">

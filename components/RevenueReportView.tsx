@@ -5,6 +5,7 @@ import {
   LineChart, Line, Legend
 } from 'recharts';
 import { TrendingUp, DollarSign, Calendar, Filter } from 'lucide-react';
+import { formatCurrency, formatPercentage } from '../utils/format';
 
 interface RevenueReportViewProps {
   orders: Order[];
@@ -195,7 +196,7 @@ const RevenueReportView: React.FC<RevenueReportViewProps> = ({
             <DollarSign className="text-green-600" size={20} />
           </div>
           <p className="text-2xl font-bold text-green-700">
-            {stats.revenue.toLocaleString()}đ
+            {formatCurrency(stats.revenue)}
           </p>
           <p className="text-xs text-green-600 mt-1">
             {stats.ordersCount} đơn hàng
@@ -208,7 +209,7 @@ const RevenueReportView: React.FC<RevenueReportViewProps> = ({
             <TrendingUp className="text-red-600 rotate-180" size={20} />
           </div>
           <p className="text-2xl font-bold text-red-700">
-            {stats.cost.toLocaleString()}đ
+            {formatCurrency(stats.cost)}
           </p>
           <p className="text-xs text-red-600 mt-1">
             Giá vốn nguyên liệu
@@ -221,7 +222,7 @@ const RevenueReportView: React.FC<RevenueReportViewProps> = ({
             <TrendingUp className="text-blue-600" size={20} />
           </div>
           <p className="text-2xl font-bold text-blue-700">
-            {stats.profit.toLocaleString()}đ
+            {formatCurrency(stats.profit)}
           </p>
           <p className="text-xs text-blue-600 mt-1">
             {stats.profitMargin.toFixed(1)}% margin
@@ -253,7 +254,7 @@ const RevenueReportView: React.FC<RevenueReportViewProps> = ({
               <XAxis dataKey="date" />
               <YAxis />
               <Tooltip 
-                formatter={(value: number) => `${value.toLocaleString()}đ`}
+                formatter={(value: number) => formatCurrency(value)}
               />
               <Bar dataKey="revenue" fill="#f43f5e" />
             </BarChart>
@@ -269,7 +270,7 @@ const RevenueReportView: React.FC<RevenueReportViewProps> = ({
               <XAxis dataKey="date" />
               <YAxis />
               <Tooltip 
-                formatter={(value: number) => `${value.toLocaleString()}đ`}
+                formatter={(value: number) => formatCurrency(value)}
               />
               <Legend />
               <Line type="monotone" dataKey="revenue" stroke="#f43f5e" name="Doanh thu" />
@@ -298,7 +299,7 @@ const RevenueReportView: React.FC<RevenueReportViewProps> = ({
                     <div className="flex justify-between items-center mb-1">
                       <span className="font-medium text-gray-800">{product.name}</span>
                       <span className="text-sm font-bold text-rose-600">
-                        {product.revenue.toLocaleString()}đ
+                        {formatCurrency(product.revenue)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">

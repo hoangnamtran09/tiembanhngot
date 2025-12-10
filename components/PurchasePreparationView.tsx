@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Ingredient, Order, OrderStatus, Product, Unit } from '../types';
 import { ShoppingCart, Package, AlertCircle, CheckCircle } from 'lucide-react';
+import { formatQuantity, formatNumber } from '../utils/format';
 
 interface PurchasePreparationViewProps {
   orders: Order[];
@@ -117,7 +118,7 @@ const PurchasePreparationView: React.FC<PurchasePreparationViewProps> = ({
             <div>
               <p className="text-sm text-gray-500">Tổng số lượng cần mua</p>
               <p className="text-2xl font-bold text-gray-800">
-                {requiredIngredients.reduce((sum, item) => sum + item.needToBuy, 0).toLocaleString()}
+                {formatNumber(requiredIngredients.reduce((sum, item) => sum + item.needToBuy, 0))}
               </p>
             </div>
           </div>
@@ -185,13 +186,13 @@ const PurchasePreparationView: React.FC<PurchasePreparationViewProps> = ({
                       <div className="font-medium text-gray-800">{item.ingredient.name}</div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600 text-right">
-                      {item.currentStock.toLocaleString()} {item.unit}
+                      {formatQuantity(item.currentStock, item.unit)}
                     </td>
                     <td className="px-6 py-4 text-sm font-semibold text-amber-600 text-right">
-                      {item.requiredQuantity.toLocaleString()} {item.unit}
+                      {formatQuantity(item.requiredQuantity, item.unit)}
                     </td>
                     <td className="px-6 py-4 text-sm font-bold text-rose-600 text-right">
-                      {item.needToBuy.toLocaleString()} {item.unit}
+                      {formatQuantity(item.needToBuy, item.unit)}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500 text-right">
                       {item.unit}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Ingredient, Order, OrderStatus, Product, PaymentMethod, PaymentInfo, BankSettings } from '../types';
 import { Plus, Search, Calendar, CheckCircle, Clock, XCircle, ChevronDown, Save, Trash2, DollarSign, CreditCard, Banknote, Edit2 } from 'lucide-react';
 import { StorageService } from '../services/storageService';
+import { formatCurrency, formatNumber } from '../utils/format';
 import QRCodeDisplay from './QRCodeDisplay';
 
 interface OrdersViewProps {
@@ -222,7 +223,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                 return (
                   <div key={idx} className="flex justify-between text-sm text-gray-600 border-b border-dashed border-gray-100 pb-1 last:border-0">
                     <span>{item.quantity}x {product?.name || 'Unknown'}</span>
-                    <span className="font-medium">{(product ? product.sellingPrice * item.quantity : 0).toLocaleString()}đ</span>
+                    <span className="font-medium">{formatCurrency(product ? product.sellingPrice * item.quantity : 0)}</span>
                   </div>
                 );
               })}
@@ -234,7 +235,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                    <Calendar size={14} /> {new Date(order.deadline).toLocaleDateString('vi-VN')}
                  </span>
                  <span className="text-lg font-bold text-rose-600">
-                   {calculateOrderTotal(order.items).toLocaleString()}đ
+                   {formatCurrency(calculateOrderTotal(order.items))}
                  </span>
               </div>
 
@@ -260,14 +261,14 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                     <div className="flex justify-between">
                       <span className="text-gray-600">Đã trả:</span>
                       <span className="font-semibold text-green-600">
-                        {order.payment.paidAmount.toLocaleString()}đ
+                        {formatCurrency(order.payment.paidAmount)}
                       </span>
                     </div>
                     {order.payment.remainingAmount > 0 && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Còn lại:</span>
                         <span className="font-semibold text-orange-600">
-                          {order.payment.remainingAmount.toLocaleString()}đ
+                          {formatCurrency(order.payment.remainingAmount)}
                         </span>
                       </div>
                     )}
@@ -339,7 +340,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                 <p className="font-semibold text-gray-800">{order.customerName}</p>
                 <p className="text-sm text-gray-500">{order.customerPhone}</p>
                 <p className="text-sm text-rose-600 font-medium mt-2">
-                  Tổng: {calculateOrderTotal(order.items).toLocaleString()}đ
+                  Tổng: {formatCurrency(calculateOrderTotal(order.items))}
                 </p>
               </div>
 
@@ -378,7 +379,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Khách hàng: <span className="font-semibold">{order.customerName}</span></p>
-                  <p className="text-sm text-gray-600">Tổng đơn: <span className="font-bold text-rose-600">{calculateOrderTotal(order.items).toLocaleString()}đ</span></p>
+                  <p className="text-sm text-gray-600">Tổng đơn: <span className="font-bold text-rose-600">{formatCurrency(calculateOrderTotal(order.items))}</span></p>
                 </div>
 
                 {/* Payment Method */}
@@ -440,18 +441,18 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Tổng tiền:</span>
-                      <span className="font-bold">{tempPayment.totalAmount.toLocaleString()}đ</span>
+                      <span className="font-bold">{formatCurrency(tempPayment.totalAmount)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Đã thanh toán:</span>
-                      <span className="font-bold text-green-600">{tempPayment.paidAmount.toLocaleString()}đ</span>
+                      <span className="font-bold text-green-600">{formatCurrency(tempPayment.paidAmount)}</span>
                     </div>
                     <div className="flex justify-between pt-2 border-t border-rose-200">
                       <span className="font-semibold">Còn lại:</span>
                       <span className={`font-bold text-lg ${
                         tempPayment.remainingAmount === 0 ? 'text-green-600' : 'text-orange-600'
                       }`}>
-                        {tempPayment.remainingAmount.toLocaleString()}đ
+                        {formatCurrency(tempPayment.remainingAmount)}
                       </span>
                     </div>
                   </div>
@@ -556,7 +557,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                                 <span className="text-sm font-medium">{product.name}</span>
                                 <div className="flex items-center gap-3">
                                    <span className="text-sm">x{item.quantity}</span>
-                                   <span className="text-sm font-bold text-gray-600">{(product.sellingPrice * item.quantity).toLocaleString()}đ</span>
+                                   <span className="text-sm font-bold text-gray-600">{formatCurrency(product.sellingPrice * item.quantity)}</span>
                                    <button onClick={() => removeItemFromNewOrder(item.productId)} className="text-red-400 hover:text-red-600">
                                       <Trash2 size={16} />
                                    </button>
@@ -568,7 +569,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                       <div className="mt-4 pt-2 border-t border-gray-200 flex justify-between items-center">
                         <span className="font-bold text-gray-700">Tổng cộng:</span>
                         <span className="font-bold text-rose-600 text-lg">
-                          {calculateOrderTotal(newOrder.items).toLocaleString()} đ
+                          {formatCurrency(calculateOrderTotal(newOrder.items))}
                         </span>
                       </div>
                    </div>
@@ -650,13 +651,13 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                          <div className="flex justify-between text-sm mb-1">
                            <span className="text-gray-600">Tổng đơn hàng:</span>
                            <span className="font-bold text-gray-800">
-                             {calculateOrderTotal(newOrder.items).toLocaleString()}đ
+                             {formatCurrency(calculateOrderTotal(newOrder.items))}
                            </span>
                          </div>
                          <div className="flex justify-between text-sm mb-1">
                            <span className="text-gray-600">Đã thanh toán:</span>
                            <span className="font-bold text-green-600">
-                             {(newOrder.payment?.paidAmount || 0).toLocaleString()}đ
+                             {formatCurrency(newOrder.payment?.paidAmount || 0)}
                            </span>
                          </div>
                          <div className="flex justify-between text-sm pt-2 border-t border-gray-200">
@@ -666,7 +667,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                                ? 'text-green-600'
                                : 'text-orange-600'
                            }`}>
-                             {(calculateOrderTotal(newOrder.items) - (newOrder.payment?.paidAmount || 0)).toLocaleString()}đ
+                             {formatCurrency(calculateOrderTotal(newOrder.items) - (newOrder.payment?.paidAmount || 0))}
                            </span>
                          </div>
                        </div>

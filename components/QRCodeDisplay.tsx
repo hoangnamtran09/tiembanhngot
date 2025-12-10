@@ -1,6 +1,7 @@
 import React from 'react';
 import { BankSettings } from '../types';
 import { QrCode, Download } from 'lucide-react';
+import { formatCurrency } from '../utils/format';
 
 interface QRCodeDisplayProps {
   bankSettings: BankSettings;
@@ -87,7 +88,7 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
               </div>
               <div className="flex justify-between gap-2 pt-1 border-t border-rose-200">
                 <span className="text-gray-600 flex-shrink-0 font-semibold">Số tiền:</span>
-                <span className="font-bold text-rose-600 text-sm">{amount.toLocaleString()}đ</span>
+                <span className="font-bold text-rose-600 text-sm">{formatCurrency(amount)}</span>
               </div>
               {description && (
                 <div className="flex justify-between gap-2 text-[11px]">

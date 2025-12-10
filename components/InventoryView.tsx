@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Ingredient, Unit } from '../types';
 import { Plus, Search, Edit2, Save, X, Trash2 } from 'lucide-react';
+import { formatCurrency, formatQuantity } from '../utils/format';
 
 interface InventoryViewProps {
   ingredients: Ingredient[];
@@ -124,16 +125,16 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
                       {ing.name}
                     </td>
                     <td className="px-6 py-4 text-gray-600">
-                      {ing.currentStock} {ing.unit}
+                      {formatQuantity(ing.currentStock, ing.unit)}
                     </td>
                     <td className="px-6 py-4 text-gray-500">
-                      {ing.buyingQuantity} {ing.unit}
+                      {formatQuantity(ing.buyingQuantity, ing.unit)}
                     </td>
                     <td className="px-6 py-4 text-gray-600">
-                      {ing.price.toLocaleString('vi-VN')} đ
+                      {formatCurrency(ing.price)}
                     </td>
                     <td className="px-6 py-4 text-gray-800 font-medium">
-                      {Math.round(calculateUnitCost(ing)).toLocaleString('vi-VN')} đ / {ing.unit}
+                      {formatCurrency(Math.round(calculateUnitCost(ing)))} / {ing.unit}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -299,8 +300,8 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
               <div className="bg-rose-50 p-3 rounded-lg text-sm text-rose-800">
                 Giá vốn ước tính: <span className="font-bold">
                   {formData.buyingQuantity && formData.price 
-                    ? Math.round(formData.price / formData.buyingQuantity).toLocaleString() 
-                    : 0} đ / {formData.unit}
+                    ? formatCurrency(Math.round(formData.price / formData.buyingQuantity))
+                    : formatCurrency(0)} / {formData.unit}
                 </span>
               </div>
             </div>

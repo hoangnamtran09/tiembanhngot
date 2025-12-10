@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { Ingredient, Order, OrderStatus, Product } from '../types';
 import { TrendingUp, DollarSign, ShoppingBag } from 'lucide-react';
+import { formatCurrency, formatNumber } from '../utils/format';
 
 interface DashboardProps {
   orders: Order[];
@@ -90,7 +91,7 @@ const Dashboard: React.FC<DashboardProps> = ({ orders, products, ingredients }) 
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-rose-100 flex items-center justify-between">
             <div>
                 <p className="text-gray-500 font-medium text-sm">Doanh Thu (Thực tế)</p>
-                <h3 className="text-2xl font-bold text-gray-800 mt-1">{totalRevenue.toLocaleString()} đ</h3>
+                <h3 className="text-2xl font-bold text-gray-800 mt-1">{formatCurrency(totalRevenue)}</h3>
             </div>
             <div className="p-3 bg-rose-50 rounded-full text-rose-500">
                 <DollarSign size={24} />
@@ -99,7 +100,7 @@ const Dashboard: React.FC<DashboardProps> = ({ orders, products, ingredients }) 
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-green-100 flex items-center justify-between">
             <div>
                 <p className="text-gray-500 font-medium text-sm">Lợi Nhuận Ước Tính</p>
-                <h3 className="text-2xl font-bold text-green-600 mt-1">{totalProfit.toLocaleString()} đ</h3>
+                <h3 className="text-2xl font-bold text-green-600 mt-1">{formatCurrency(totalProfit)}</h3>
                 <p className="text-xs text-green-500 mt-1">Margin: {totalRevenue > 0 ? ((totalProfit/totalRevenue)*100).toFixed(1) : 0}%</p>
             </div>
             <div className="p-3 bg-green-50 rounded-full text-green-500">
@@ -129,7 +130,7 @@ const Dashboard: React.FC<DashboardProps> = ({ orders, products, ingredients }) 
                         <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} tickFormatter={(value) => `${value/1000}k`} />
                         <Tooltip 
                             contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
-                            formatter={(value: number) => [`${value.toLocaleString()} đ`, 'Doanh thu']}
+                            formatter={(value: number) => [formatCurrency(value), 'Doanh thu']}
                         />
                         <Bar dataKey="revenue" fill="#fb7185" radius={[4, 4, 0, 0]} barSize={40} />
                     </BarChart>

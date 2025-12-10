@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.1] - 2024-12-10
+
+### ✨ Added - Auto Number Formatting
+- **Format Utilities**: Tạo `utils/format.ts` với các functions format số
+  - `formatNumber()` - Format số với dấu phẩy (1,234,567)
+  - `formatCurrency()` - Format tiền VND (1,234,567đ)
+  - `formatQuantity()` - Format số lượng với đơn vị (1,234.5 kg)
+  - `formatPercentage()` - Format phần trăm (45.5%)
+  - `parseFormattedNumber()` - Parse string về number
+- **Applied Everywhere**: Áp dụng format tự động vào tất cả components:
+  - ✅ InventoryView - Giá, số lượng
+  - ✅ OrdersView - Tổng tiền, thanh toán
+  - ✅ RecipeView - Giá bán, giá vốn, lợi nhuận
+  - ✅ Dashboard - Doanh thu, lợi nhuận
+  - ✅ QRCodeDisplay - Số tiền
+  - ✅ PurchasePreparationView - Số lượng nguyên liệu
+  - ✅ RevenueReportView - Tất cả số liệu tài chính
+- **Consistent Formatting**: Tất cả số hiển thị đều có dấu phẩy ngăn cách hàng nghìn
+- **Vietnamese Locale**: Sử dụng locale 'vi-VN' cho format chuẩn Việt Nam
+
+---
+
 ## [1.4.0] - 2024-12-10
 
 ### ✨ Added - Purchase Preparation & Revenue Reports
