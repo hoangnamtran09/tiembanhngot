@@ -6,6 +6,8 @@ import RecipeView from './components/RecipeView';
 import OrdersView from './components/OrdersView';
 import AssistantView from './components/AssistantView';
 import BankSettingsView from './components/BankSettingsView';
+import PurchasePreparationView from './components/PurchasePreparationView';
+import RevenueReportView from './components/RevenueReportView';
 import { StorageService } from './services/storageService';
 import { Ingredient, Order, Product } from './types';
 import { Menu } from 'lucide-react';
@@ -120,12 +122,16 @@ const App: React.FC = () => {
     switch (activeTab) {
       case 'dashboard':
         return <Dashboard orders={orders} products={products} ingredients={ingredients} />;
+      case 'orders':
+        return <OrdersView orders={orders} products={products} ingredients={ingredients} setOrders={setOrders} updateStock={handleDeductInventory} />;
+      case 'purchase':
+        return <PurchasePreparationView orders={orders} products={products} ingredients={ingredients} />;
       case 'inventory':
         return <InventoryView ingredients={ingredients} setIngredients={setIngredients} />;
       case 'recipes':
         return <RecipeView products={products} ingredients={ingredients} setProducts={setProducts} />;
-      case 'orders':
-        return <OrdersView orders={orders} products={products} ingredients={ingredients} setOrders={setOrders} updateStock={handleDeductInventory} />;
+      case 'revenue':
+        return <RevenueReportView orders={orders} products={products} ingredients={ingredients} />;
       case 'assistant':
         return <AssistantView ingredients={ingredients} products={products} />;
       case 'settings':
@@ -159,8 +165,10 @@ const App: React.FC = () => {
                {[
                  { id: 'dashboard', label: 'Tổng Quan' },
                  { id: 'orders', label: 'Đơn Hàng' },
+                 { id: 'purchase', label: 'Chuẩn Bị Nguyên Liệu' },
                  { id: 'inventory', label: 'Kho Nguyên Liệu' },
                  { id: 'recipes', label: 'Công Thức' },
+                 { id: 'revenue', label: 'Báo Cáo Doanh Thu' },
                  { id: 'assistant', label: 'Trợ Lý AI' },
                  { id: 'settings', label: 'Cài Đặt Ngân Hàng' }
                ].map(item => (

@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2024-12-10
+
+### ✨ Added - Purchase Preparation & Revenue Reports
+- **Chuẩn Bị Nguyên Liệu Cần Mua**:
+  - Tự động tính toán nguyên liệu cần mua dựa trên đơn hàng đang chờ
+  - Hiển thị: Tồn kho, Cần cho đơn hàng, Cần mua thêm
+  - Summary cards: Số đơn hàng, Loại nguyên liệu, Tổng số lượng
+  - Danh sách đơn hàng đang chờ
+  - Empty states khi không có đơn hoặc đủ nguyên liệu
+  
+- **Báo Cáo Doanh Thu & Lợi Nhuận**:
+  - Filter theo thời gian: Hôm nay, 7 ngày, 30 ngày, Tất cả
+  - Stats cards: Doanh thu, Chi phí, Lợi nhuận, Số đơn hàng
+  - Charts:
+    - Bar chart: Doanh thu theo ngày
+    - Line chart: Doanh thu, Chi phí, Lợi nhuận theo ngày
+  - Top 5 sản phẩm bán chạy với progress bars
+  - Tính toán profit margin tự động
+
+### 🎨 UI Improvements
+- Menu items mới trong sidebar
+- Responsive design cho charts
+- Color-coded stats cards
+- Professional report layout
+
+---
+
 ## [1.3.0] - 2024-12-10
 
 ### ✨ Added - QR Code Payment Integration
