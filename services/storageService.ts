@@ -70,16 +70,19 @@ export const StorageService = {
 
       if (error) throw error;
 
+      // Return empty array if no data (user deleted all)
+      // Only seed INITIAL data on first setup (check if table exists and has never been used)
       if (!data || data.length === 0) {
-        // Nếu database trống, seed dữ liệu ban đầu
-        await StorageService.saveIngredients(INITIAL_INGREDIENTS);
-        return INITIAL_INGREDIENTS;
+        // Check if this is first time setup by checking if we can query the table
+        // If table exists but empty, return empty (user deleted all)
+        return [];
       }
 
       return data.map(mapIngredient);
     } catch (err) {
       console.error('Lỗi load ingredients:', err);
-      return INITIAL_INGREDIENTS;
+      // On error, return empty instead of INITIAL to avoid auto-seeding
+      return [];
     }
   },
 
@@ -159,16 +162,16 @@ export const StorageService = {
 
       if (recipeError) throw recipeError;
 
+      // Return empty array if no data (user deleted all)
       if (!products || products.length === 0) {
-        // Seed dữ liệu ban đầu
-        await StorageService.saveProducts(INITIAL_PRODUCTS);
-        return INITIAL_PRODUCTS;
+        return [];
       }
 
       return products.map(p => mapProduct(p, recipeItems || []));
     } catch (err) {
       console.error('Lỗi load products:', err);
-      return INITIAL_PRODUCTS;
+      // On error, return empty instead of INITIAL to avoid auto-seeding
+      return [];
     }
   },
 
@@ -271,16 +274,16 @@ export const StorageService = {
 
       if (itemsError) throw itemsError;
 
+      // Return empty array if no data (user deleted all)
       if (!orders || orders.length === 0) {
-        // Seed dữ liệu ban đầu
-        await StorageService.saveOrders(INITIAL_ORDERS);
-        return INITIAL_ORDERS;
+        return [];
       }
 
       return orders.map(o => mapOrder(o, orderItems || []));
     } catch (err) {
       console.error('Lỗi load orders:', err);
-      return INITIAL_ORDERS;
+      // On error, return empty instead of INITIAL to avoid auto-seeding
+      return [];
     }
   },
 
