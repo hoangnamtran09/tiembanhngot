@@ -85,21 +85,32 @@ export const StorageService = {
 
   saveIngredients: async (ingredients: Ingredient[]): Promise<void> => {
     try {
-      const dbIngredients = ingredients.map(ing => ({
-        id: ing.id,
-        name: ing.name,
-        unit: ing.unit,
-        price: ing.price,
-        buying_quantity: ing.buyingQuantity,
-        current_stock: ing.currentStock,
-        min_threshold: ing.minThreshold
-      }));
-
-      const { error } = await supabase
+      // Step 1: Delete all existing ingredients
+      const { error: deleteError } = await supabase
         .from('ingredients')
-        .upsert(dbIngredients, { onConflict: 'id' });
+        .delete()
+        .neq('id', ''); // Delete all (neq '' matches all)
 
-      if (error) throw error;
+      if (deleteError) throw deleteError;
+
+      // Step 2: Insert new ingredients (if any)
+      if (ingredients.length > 0) {
+        const dbIngredients = ingredients.map(ing => ({
+          id: ing.id,
+          name: ing.name,
+          unit: ing.unit,
+          price: ing.price,
+          buying_quantity: ing.buyingQuantity,
+          current_stock: ing.currentStock,
+          min_threshold: ing.minThreshold
+        }));
+
+        const { error: insertError } = await supabase
+          .from('ingredients')
+          .insert(dbIngredients);
+
+        if (insertError) throw insertError;
+      }
     } catch (err) {
       console.error('Lỗi lưu ingredients:', err);
     }
@@ -136,43 +147,46 @@ export const StorageService = {
 
   saveProducts: async (products: Product[]): Promise<void> => {
     try {
-      // 1. Save products
-      const dbProducts = products.map(p => ({
-        id: p.id,
-        name: p.name,
-        description: p.description,
-        selling_price: p.sellingPrice,
-        category: p.category
-      }));
-
-      const { error: prodError } = await supabase
+      // Step 1: Delete all products (CASCADE will delete recipe_items)
+      const { error: deleteError } = await supabase
         .from('products')
-        .upsert(dbProducts, { onConflict: 'id' });
-
-      if (prodError) throw prodError;
-
-      // 2. Delete old recipe items for these products
-      const productIds = products.map(p => p.id);
-      await supabase
-        .from('recipe_items')
         .delete()
-        .in('product_id', productIds);
+        .neq('id', '');
 
-      // 3. Insert new recipe items
-      const allRecipeItems = products.flatMap(p =>
-        p.recipe.map(ri => ({
-          product_id: p.id,
-          ingredient_id: ri.ingredientId,
-          quantity: ri.quantity
-        }))
-      );
+      if (deleteError) throw deleteError;
 
-      if (allRecipeItems.length > 0) {
-        const { error: recipeError } = await supabase
-          .from('recipe_items')
-          .insert(allRecipeItems);
+      // Step 2: Insert products (if any)
+      if (products.length > 0) {
+        const dbProducts = products.map(p => ({
+          id: p.id,
+          name: p.name,
+          description: p.description,
+          selling_price: p.sellingPrice,
+          category: p.category
+        }));
 
-        if (recipeError) throw recipeError;
+        const { error: prodError } = await supabase
+          .from('products')
+          .insert(dbProducts);
+
+        if (prodError) throw prodError;
+
+        // Step 3: Insert recipe items
+        const allRecipeItems = products.flatMap(p =>
+          p.recipe.map(ri => ({
+            product_id: p.id,
+            ingredient_id: ri.ingredientId,
+            quantity: ri.quantity
+          }))
+        );
+
+        if (allRecipeItems.length > 0) {
+          const { error: recipeError } = await supabase
+            .from('recipe_items')
+            .insert(allRecipeItems);
+
+          if (recipeError) throw recipeError;
+        }
       }
     } catch (err) {
       console.error('Lỗi lưu products:', err);
@@ -210,50 +224,53 @@ export const StorageService = {
 
   saveOrders: async (orders: Order[]): Promise<void> => {
     try {
-      // 1. Save orders
-      const dbOrders = orders.map(o => ({
-        id: o.id,
-        customer_name: o.customerName,
-        customer_phone: o.customerPhone,
-        deadline: o.deadline,
-        status: o.status,
-        notes: o.notes || '',
-        created_at: o.createdAt,
-        // Payment info
-        payment_method: o.payment?.method || 'Tiền mặt',
-        total_amount: o.payment?.totalAmount || 0,
-        paid_amount: o.payment?.paidAmount || 0,
-        remaining_amount: o.payment?.remainingAmount || 0
-      }));
-
-      const { error: ordError } = await supabase
+      // Step 1: Delete all orders (CASCADE will delete order_items)
+      const { error: deleteError } = await supabase
         .from('orders')
-        .upsert(dbOrders, { onConflict: 'id' });
-
-      if (ordError) throw ordError;
-
-      // 2. Delete old order items
-      const orderIds = orders.map(o => o.id);
-      await supabase
-        .from('order_items')
         .delete()
-        .in('order_id', orderIds);
+        .neq('id', '');
 
-      // 3. Insert new order items
-      const allOrderItems = orders.flatMap(o =>
-        o.items.map(item => ({
-          order_id: o.id,
-          product_id: item.productId,
-          quantity: item.quantity
-        }))
-      );
+      if (deleteError) throw deleteError;
 
-      if (allOrderItems.length > 0) {
-        const { error: itemsError } = await supabase
-          .from('order_items')
-          .insert(allOrderItems);
+      // Step 2: Insert orders (if any)
+      if (orders.length > 0) {
+        const dbOrders = orders.map(o => ({
+          id: o.id,
+          customer_name: o.customerName,
+          customer_phone: o.customerPhone,
+          deadline: o.deadline,
+          status: o.status,
+          notes: o.notes || '',
+          created_at: o.createdAt,
+          // Payment info
+          payment_method: o.payment?.method || 'Tiền mặt',
+          total_amount: o.payment?.totalAmount || 0,
+          paid_amount: o.payment?.paidAmount || 0,
+          remaining_amount: o.payment?.remainingAmount || 0
+        }));
 
-        if (itemsError) throw itemsError;
+        const { error: ordError } = await supabase
+          .from('orders')
+          .insert(dbOrders);
+
+        if (ordError) throw ordError;
+
+        // Step 3: Insert order items
+        const allOrderItems = orders.flatMap(o =>
+          o.items.map(item => ({
+            order_id: o.id,
+            product_id: item.productId,
+            quantity: item.quantity
+          }))
+        );
+
+        if (allOrderItems.length > 0) {
+          const { error: itemsError } = await supabase
+            .from('order_items')
+            .insert(allOrderItems);
+
+          if (itemsError) throw itemsError;
+        }
       }
     } catch (err) {
       console.error('Lỗi lưu orders:', err);
