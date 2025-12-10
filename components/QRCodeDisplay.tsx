@@ -42,11 +42,11 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
   return (
     <div className="space-y-3">
       {/* QR Code Image */}
-      <div className="relative bg-white p-4 rounded-lg border-2 border-rose-200 flex justify-center">
+      <div className="relative bg-white p-3 rounded-lg border-2 border-rose-200 flex justify-center">
         <img 
           src={qrUrl} 
           alt="QR Code thanh toán" 
-          className="w-full max-w-[300px] h-auto"
+          className="w-full max-w-[200px] sm:max-w-[250px] h-auto"
           onError={(e) => {
             // Fallback nếu load lỗi
             const target = e.target as HTMLImageElement;
@@ -60,28 +60,28 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
       </div>
 
       {/* Bank Info */}
-      <div className="bg-gradient-to-r from-rose-50 to-pink-50 p-4 rounded-lg border border-rose-100">
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-600">Ngân hàng:</span>
-            <span className="font-semibold text-gray-800">{bankSettings.bankName}</span>
+      <div className="bg-gradient-to-r from-rose-50 to-pink-50 p-3 rounded-lg border border-rose-100">
+        <div className="space-y-1.5 text-xs sm:text-sm">
+          <div className="flex justify-between gap-2">
+            <span className="text-gray-600 flex-shrink-0">Ngân hàng:</span>
+            <span className="font-semibold text-gray-800 text-right">{bankSettings.bankName}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Số TK:</span>
-            <span className="font-mono font-semibold text-gray-800">{bankSettings.accountNumber}</span>
+          <div className="flex justify-between gap-2">
+            <span className="text-gray-600 flex-shrink-0">Số TK:</span>
+            <span className="font-mono font-semibold text-gray-800 text-right">{bankSettings.accountNumber}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Chủ TK:</span>
-            <span className="font-semibold text-gray-800">{bankSettings.accountName}</span>
+          <div className="flex justify-between gap-2">
+            <span className="text-gray-600 flex-shrink-0">Chủ TK:</span>
+            <span className="font-semibold text-gray-800 text-right break-words">{bankSettings.accountName}</span>
           </div>
-          <div className="flex justify-between pt-2 border-t border-rose-200">
-            <span className="text-gray-600">Số tiền:</span>
-            <span className="font-bold text-rose-600 text-lg">{amount.toLocaleString()}đ</span>
+          <div className="flex justify-between gap-2 pt-1.5 border-t border-rose-200">
+            <span className="text-gray-600 flex-shrink-0">Số tiền:</span>
+            <span className="font-bold text-rose-600 text-base sm:text-lg">{amount.toLocaleString()}đ</span>
           </div>
           {description && (
-            <div className="flex justify-between">
-              <span className="text-gray-600">Nội dung:</span>
-              <span className="font-medium text-gray-700 text-right">{description}</span>
+            <div className="flex justify-between gap-2">
+              <span className="text-gray-600 flex-shrink-0">Nội dung:</span>
+              <span className="font-medium text-gray-700 text-right break-words">{description}</span>
             </div>
           )}
         </div>
@@ -90,19 +90,19 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
       {/* Download Button */}
       <button
         onClick={handleDownload}
-        className="w-full flex items-center justify-center gap-2 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium"
+        className="w-full flex items-center justify-center gap-2 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-xs sm:text-sm font-medium"
       >
-        <Download size={16} />
+        <Download size={14} />
         Tải mã QR
       </button>
 
       {/* Instructions */}
-      <div className="bg-blue-50 p-3 rounded-lg text-xs text-blue-800">
+      <div className="bg-blue-50 p-2.5 rounded-lg text-xs text-blue-800">
         <p className="font-semibold mb-1">📱 Hướng dẫn:</p>
-        <ul className="space-y-1 list-disc list-inside">
-          <li>Mở app ngân hàng và chọn chức năng quét QR</li>
-          <li>Quét mã QR bên trên</li>
-          <li>Kiểm tra thông tin và xác nhận chuyển khoản</li>
+        <ul className="space-y-0.5 list-disc list-inside text-[11px] leading-relaxed">
+          <li>Mở app ngân hàng, chọn quét QR</li>
+          <li>Quét mã QR ở trên</li>
+          <li>Kiểm tra và xác nhận chuyển khoản</li>
         </ul>
       </div>
     </div>

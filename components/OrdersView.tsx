@@ -461,15 +461,17 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
               {/* QR Code for Transfer */}
               {tempPayment.method === PaymentMethod.TRANSFER && bankSettings && tempPayment.remainingAmount > 0 && (
                 <div className="border-t border-gray-200 pt-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                     <CreditCard size={16} className="text-rose-500" />
                     Mã QR Chuyển Khoản
                   </h4>
-                  <QRCodeDisplay
-                    bankSettings={bankSettings}
-                    amount={tempPayment.remainingAmount}
-                    description={`DH ${order.customerName}`}
-                  />
+                  <div className="max-w-sm mx-auto">
+                    <QRCodeDisplay
+                      bankSettings={bankSettings}
+                      amount={tempPayment.remainingAmount}
+                      description={`DH ${order.customerName}`}
+                    />
+                  </div>
                 </div>
               )}
 
@@ -495,10 +497,10 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
       {/* New Order Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-xl h-full max-h-[90vh] flex flex-col">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Tạo Đơn Hàng Mới</h3>
+          <div className="bg-white rounded-2xl w-full max-w-2xl p-4 sm:p-6 shadow-xl h-full max-h-[90vh] flex flex-col">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4">Tạo Đơn Hàng Mới</h3>
             
-            <div className="flex-1 overflow-y-auto space-y-6 pr-2">
+            <div className="flex-1 overflow-y-auto space-y-4 sm:space-y-6 pr-2">
                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Tên khách hàng</label>
@@ -676,15 +678,17 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                    {/* QR Code for Transfer */}
                    {newOrder.payment?.method === PaymentMethod.TRANSFER && bankSettings && newOrder.items && newOrder.items.length > 0 && (
                      <div className="mt-4 border-t border-gray-200 pt-4">
-                       <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                       <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                          <CreditCard size={16} className="text-rose-500" />
                          Mã QR Chuyển Khoản
                        </h4>
-                       <QRCodeDisplay
-                         bankSettings={bankSettings}
-                         amount={calculateOrderTotal(newOrder.items) - (newOrder.payment?.paidAmount || 0)}
-                         description={`DH ${newOrder.customerName || 'Khach hang'}`}
-                       />
+                       <div className="max-w-sm mx-auto">
+                         <QRCodeDisplay
+                           bankSettings={bankSettings}
+                           amount={calculateOrderTotal(newOrder.items) - (newOrder.payment?.paidAmount || 0)}
+                           description={`DH ${newOrder.customerName || 'Khach hang'}`}
+                         />
+                       </div>
                      </div>
                    )}
                  </div>
