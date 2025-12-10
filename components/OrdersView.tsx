@@ -43,6 +43,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
     deadline: '',
     items: [],
     status: OrderStatus.PENDING,
+    notes: '',
     payment: {
       method: PaymentMethod.CASH,
       totalAmount: 0,
@@ -99,6 +100,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
       items: [], 
       status: OrderStatus.PENDING, 
       deadline: '',
+      notes: '',
       payment: {
         method: PaymentMethod.CASH,
         totalAmount: 0,
@@ -228,6 +230,12 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                   </div>
                 );
               })}
+              {order.notes && (
+                <div className="mt-3 pt-2 border-t border-gray-200">
+                  <p className="text-xs text-gray-500 mb-1 font-medium">Ghi chú:</p>
+                  <p className="text-sm text-gray-700 italic">{order.notes}</p>
+                </div>
+              )}
             </div>
 
             <div className="pt-4 border-t border-gray-100 mt-auto">
@@ -522,6 +530,16 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                       value={newOrder.deadline}
                       onChange={e => setNewOrder({...newOrder, deadline: e.target.value})}
                       className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-rose-500 outline-none"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
+                    <textarea 
+                      value={newOrder.notes || ''}
+                      onChange={e => setNewOrder({...newOrder, notes: e.target.value})}
+                      placeholder="Nhập ghi chú cho đơn hàng (nếu có)..."
+                      rows={3}
+                      className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-rose-500 outline-none resize-none"
                     />
                   </div>
                </div>
