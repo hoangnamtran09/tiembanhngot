@@ -43,6 +43,11 @@ CREATE TABLE IF NOT EXISTS orders (
   deadline TEXT NOT NULL,
   status TEXT NOT NULL,
   notes TEXT,
+  -- Payment Information
+  payment_method TEXT DEFAULT 'Tiền mặt', -- 'Tiền mặt' hoặc 'Chuyển khoản'
+  total_amount DECIMAL(10, 2) DEFAULT 0,
+  paid_amount DECIMAL(10, 2) DEFAULT 0,
+  remaining_amount DECIMAL(10, 2) DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

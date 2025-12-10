@@ -29,21 +29,35 @@ const mapProduct = (dbProd: any, recipeItems: any[]): Product => ({
 });
 
 // Helper: Convert DB order + items to App format
-const mapOrder = (dbOrder: any, orderItems: any[]): Order => ({
-  id: dbOrder.id,
-  customerName: dbOrder.customer_name,
-  customerPhone: dbOrder.customer_phone,
-  deadline: dbOrder.deadline,
-  status: dbOrder.status,
-  notes: dbOrder.notes || '',
-  createdAt: dbOrder.created_at || new Date().toISOString(),
-  items: orderItems
-    .filter((oi: any) => oi.order_id === dbOrder.id)
-    .map((oi: any) => ({
-      productId: oi.product_id,
-      quantity: Number(oi.quantity)
-    }))
-});
+const mapOrder = (dbOrder: any, orderItems: any[]): Order => {
+  const order: Order = {
+    id: dbOrder.id,
+    customerName: dbOrder.customer_name,
+    customerPhone: dbOrder.customer_phone,
+    deadline: dbOrder.deadline,
+    status: dbOrder.status,
+    notes: dbOrder.notes || '',
+    createdAt: dbOrder.created_at || new Date().toISOString(),
+    items: orderItems
+      .filter((oi: any) => oi.order_id === dbOrder.id)
+      .map((oi: any) => ({
+        productId: oi.product_id,
+        quantity: Number(oi.quantity)
+      }))
+  };
+
+  // Map payment info if exists
+  if (dbOrder.payment_method) {
+    order.payment = {
+      method: dbOrder.payment_method,
+      totalAmount: Number(dbOrder.total_amount || 0),
+      paidAmount: Number(dbOrder.paid_amount || 0),
+      remainingAmount: Number(dbOrder.remaining_amount || 0)
+    };
+  }
+
+  return order;
+};
 
 export const StorageService = {
   // ========== INGREDIENTS ==========
@@ -204,7 +218,12 @@ export const StorageService = {
         deadline: o.deadline,
         status: o.status,
         notes: o.notes || '',
-        created_at: o.createdAt
+        created_at: o.createdAt,
+        // Payment info
+        payment_method: o.payment?.method || 'Tiền mặt',
+        total_amount: o.payment?.totalAmount || 0,
+        paid_amount: o.payment?.paidAmount || 0,
+        remaining_amount: o.payment?.remainingAmount || 0
       }));
 
       const { error: ordError } = await supabase

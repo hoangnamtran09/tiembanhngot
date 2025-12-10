@@ -13,11 +13,22 @@
 
 ## Bước 2: Chạy SQL Schema
 
+### Setup mới (Database trống)
+
 1. Sau khi project được tạo, vào **SQL Editor** (menu bên trái)
 2. Mở file `supabase-schema.sql` trong dự án này
 3. Copy toàn bộ nội dung file
 4. Paste vào SQL Editor trong Supabase
 5. Nhấn **Run** để tạo các bảng
+
+### Migration (Database đã có sẵn)
+
+Nếu bạn đã có database từ trước và muốn thêm tính năng thanh toán:
+
+1. Vào **SQL Editor** trong Supabase
+2. Mở file `supabase-migration-payment.sql`
+3. Copy và paste vào SQL Editor
+4. Nhấn **Run** để thêm các cột payment
 
 **Các bảng sẽ được tạo:**
 - `ingredients` - Nguyên liệu
@@ -115,7 +126,12 @@ orders (đơn hàng)
 ├── deadline (TEXT)
 ├── status (TEXT)
 ├── notes (TEXT)
-└── created_at (TIMESTAMP)
+├── payment_method (TEXT) ✨ NEW - 'Tiền mặt' hoặc 'Chuyển khoản'
+├── total_amount (DECIMAL) ✨ NEW - Tổng tiền đơn hàng
+├── paid_amount (DECIMAL) ✨ NEW - Số tiền đã trả/chuyển
+├── remaining_amount (DECIMAL) ✨ NEW - Số tiền còn lại
+├── created_at (TIMESTAMP)
+└── updated_at (TIMESTAMP)
 
 order_items (chi tiết đơn hàng)
 ├── id (SERIAL, PRIMARY KEY)

@@ -1,4 +1,4 @@
-import { Ingredient, Order, OrderStatus, Product, Unit } from './types';
+import { Ingredient, Order, OrderStatus, Product, Unit, PaymentMethod } from './types';
 
 export const INITIAL_INGREDIENTS: Ingredient[] = [
   { id: '1', name: 'Bột mì đa dụng', unit: Unit.KG, price: 20000, buyingQuantity: 1, currentStock: 5000, minThreshold: 1000 },
@@ -48,7 +48,13 @@ export const INITIAL_ORDERS: Order[] = [
     createdAt: new Date().toISOString(),
     items: [
       { productId: 'p1', quantity: 2 }
-    ]
+    ],
+    payment: {
+      method: PaymentMethod.TRANSFER,
+      totalAmount: 170000, // 2 x 85000
+      paidAmount: 100000,
+      remainingAmount: 70000
+    }
   },
   {
     id: 'o2',
@@ -60,6 +66,12 @@ export const INITIAL_ORDERS: Order[] = [
     items: [
       { productId: 'p2', quantity: 1 },
       { productId: 'p1', quantity: 1 }
-    ]
+    ],
+    payment: {
+      method: PaymentMethod.CASH,
+      totalAmount: 205000, // 120000 + 85000
+      paidAmount: 205000,
+      remainingAmount: 0
+    }
   }
 ];

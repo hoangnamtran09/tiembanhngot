@@ -79,6 +79,7 @@ Xem file [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) để có hướng dẫn chi t
 - 📦 **Quản Lý Kho**: Theo dõi nguyên liệu, cảnh báo hết hàng
 - 📝 **Công Thức**: Tạo và quản lý công thức sản phẩm
 - 🛒 **Đơn Hàng**: Quản lý đơn hàng, trạng thái, tự động trừ kho
+- 💰 **Thanh Toán**: Quản lý thanh toán (tiền mặt/chuyển khoản), theo dõi công nợ
 - 🤖 **Trợ Lý AI**: Tính toán nguyên liệu, tư vấn công thức (Gemini)
 - 💾 **Supabase Backend**: Lưu trữ dữ liệu trên cloud, auto-sync
 

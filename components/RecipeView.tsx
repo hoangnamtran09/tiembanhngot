@@ -11,6 +11,7 @@ interface RecipeViewProps {
 const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProducts }) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   
   // Edit/Create State
   const [editForm, setEditForm] = useState<Partial<Product>>({
@@ -93,11 +94,76 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
     });
   };
 
+  const handleDeleteProduct = (productId: string) => {
+    const updated = products.filter(p => p.id !== productId);
+    setProducts(updated);
+    if (selectedProduct?.id === productId) {
+      setSelectedProduct(null);
+    }
+    setDeleteConfirm(null);
+  };
+
   const totalCost = calculateCost(editForm.recipe || []);
   const profitMargin = editForm.sellingPrice ? ((editForm.sellingPrice - totalCost) / editForm.sellingPrice) * 100 : 0;
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50/50">
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (() => {
+        const product = products.find(p => p.id === deleteConfirm);
+        if (!product) return null;
+
+        const productCost = calculateCost(product.recipe);
+        const profit = product.sellingPrice - productCost;
+
+        return (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-red-100 rounded-full">
+                  <Trash2 className="text-red-600" size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800">Xác nhận xóa</h3>
+                  <p className="text-sm text-gray-500">Thao tác này không thể hoàn tác</p>
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <p className="text-sm text-gray-600 mb-2">Bạn có chắc muốn xóa công thức:</p>
+                <p className="font-semibold text-gray-800 text-lg">{product.name}</p>
+                <p className="text-sm text-gray-500 mt-1">{product.description}</p>
+                <div className="mt-3 space-y-1 text-sm text-gray-600">
+                  <p>• Danh mục: <span className="font-medium">{product.category}</span></p>
+                  <p>• Giá bán: <span className="font-medium text-rose-600">{product.sellingPrice.toLocaleString()}đ</span></p>
+                  <p>• Giá vốn: <span className="font-medium">{Math.round(productCost).toLocaleString()}đ</span></p>
+                  <p>• Lợi nhuận: <span className="font-medium text-green-600">{Math.round(profit).toLocaleString()}đ</span></p>
+                  <p>• Số nguyên liệu: <span className="font-medium">{product.recipe.length} loại</span></p>
+                </div>
+                <p className="text-xs text-amber-600 mt-3 bg-amber-50 p-2 rounded">
+                  ⚠️ Lưu ý: Đơn hàng có sản phẩm này sẽ không tính được tổng tiền chính xác!
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setDeleteConfirm(null)} 
+                  className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium"
+                >
+                  Hủy
+                </button>
+                <button 
+                  onClick={() => handleDeleteProduct(product.id)}
+                  className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-medium"
+                >
+                  Xóa công thức
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+      
       {/* List Sidebar */}
       <div className="w-1/3 border-r border-gray-200 bg-white flex flex-col pt-14 md:pt-0">
          <div className="p-4 border-b border-gray-100 flex justify-between items-center">
@@ -113,16 +179,35 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
             {products.map(product => (
               <div 
                 key={product.id}
-                onClick={() => handleEdit(product)}
-                className={`p-4 border-b border-gray-50 cursor-pointer transition-colors hover:bg-rose-50/50 ${
+                className={`p-4 border-b border-gray-50 transition-colors hover:bg-rose-50/50 group ${
                   selectedProduct?.id === product.id && !isCreating ? 'bg-rose-50 border-rose-200' : ''
                 }`}
               >
                 <div className="flex justify-between items-start mb-1">
-                  <h3 className="font-semibold text-gray-800">{product.name}</h3>
-                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{product.category}</span>
+                  <h3 
+                    className="font-semibold text-gray-800 cursor-pointer flex-1"
+                    onClick={() => handleEdit(product)}
+                  >
+                    {product.name}
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{product.category}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteConfirm(product.id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 p-1 rounded transition-all"
+                      title="Xóa công thức"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm text-gray-500">
+                <div 
+                  className="flex justify-between text-sm text-gray-500 cursor-pointer"
+                  onClick={() => handleEdit(product)}
+                >
                   <span>Giá bán: {product.sellingPrice.toLocaleString()}đ</span>
                   <span className="flex items-center gap-1 text-rose-500">
                      <ChevronRight size={14} />

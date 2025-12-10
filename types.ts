@@ -39,6 +39,18 @@ export enum OrderStatus {
   CANCELLED = 'Đã hủy'
 }
 
+export enum PaymentMethod {
+  CASH = 'Tiền mặt',
+  TRANSFER = 'Chuyển khoản'
+}
+
+export interface PaymentInfo {
+  method: PaymentMethod;
+  totalAmount: number; // Tổng tiền đơn hàng
+  paidAmount: number; // Đã thanh toán (dùng cho cả tiền mặt và chuyển khoản)
+  remainingAmount: number; // Còn lại (tự động tính)
+}
+
 export interface OrderItem {
   productId: string;
   quantity: number;
@@ -53,6 +65,7 @@ export interface Order {
   status: OrderStatus;
   notes?: string;
   createdAt: string;
+  payment?: PaymentInfo; // Thông tin thanh toán
 }
 
 export interface SalesStats {

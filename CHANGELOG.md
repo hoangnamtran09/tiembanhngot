@@ -1,0 +1,115 @@
+# 📝 Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [1.2.1] - 2024-12-10
+
+### 🗑️ Removed - Low Stock Warnings
+- **Bỏ cảnh báo tồn kho**: Xóa icon cảnh báo và highlight màu vàng trong bảng nguyên liệu
+- **Bỏ Low Stock Alert**: Xóa phần "Cảnh Báo Nguyên Liệu Sắp Hết" trong Dashboard
+- **Cleanup**: Xóa AlertTriangle và AlertCircle icons không còn dùng
+
+---
+
+## [1.2.0] - 2024-12-10
+
+### ✨ Added - Delete Functionality
+- **Xóa Đơn Hàng**: Thêm nút xóa đơn hàng với confirmation dialog
+- **Xóa Nguyên Liệu**: Thêm nút xóa nguyên liệu với cảnh báo ảnh hưởng công thức
+- **Xóa Công Thức**: Thêm nút xóa sản phẩm (công thức) với cảnh báo ảnh hưởng đơn hàng
+- **Confirmation Dialogs**: Modal xác nhận trước khi xóa với đầy đủ thông tin
+  - Hiển thị chi tiết item sẽ bị xóa
+  - Cảnh báo các ảnh hưởng có thể xảy ra
+  - UI đẹp với icons và màu sắc phù hợp
+
+### 💄 UI Improvements
+- Nút xóa màu đỏ với hover effect
+- Trash2 icon từ Lucide React
+- Confirmation modal với animation fade in
+- Responsive design cho mobile
+
+---
+
+## [1.1.0] - 2024-12-10
+
+### ✨ Added - Payment Management Feature
+- **Payment Methods**: Thêm lựa chọn thanh toán bằng Tiền mặt hoặc Chuyển khoản
+- **Payment Tracking**: Theo dõi số tiền đã trả/chuyển và còn lại
+- **Payment UI**: 
+  - Form thanh toán trong modal tạo đơn hàng mới
+  - Hiển thị thông tin thanh toán trong order card
+  - Modal chỉnh sửa thanh toán cho đơn hàng đã tồn tại
+  - Icon phân biệt phương thức thanh toán (💵 Tiền mặt / 💳 Chuyển khoản)
+- **Payment Status Indicators**:
+  - ✓ Đã thanh toán đủ (màu xanh)
+  - ⚠️ Còn nợ (màu cam, hiển thị số tiền còn lại)
+- **Database Schema**: Thêm 4 cột mới vào bảng `orders`:
+  - `payment_method`: Phương thức thanh toán
+  - `total_amount`: Tổng tiền đơn hàng
+  - `paid_amount`: Số tiền đã thanh toán
+  - `remaining_amount`: Số tiền còn lại
+- **Migration Script**: File `supabase-migration-payment.sql` để cập nhật database có sẵn
+
+### 📚 Documentation
+- Cập nhật `SUPABASE_SETUP.md` với hướng dẫn migration
+- Cập nhật `README.md` với tính năng thanh toán
+- Thêm file `CHANGELOG.md`
+
+---
+
+## [1.0.0] - 2024-12-10
+
+### 🎉 Initial Release - Supabase Integration
+
+#### ✨ Features
+- **Supabase Backend**: Thay thế localStorage bằng Supabase PostgreSQL
+- **Dashboard**: Tổng quan doanh thu, chi phí, lợi nhuận
+- **Inventory Management**: Quản lý nguyên liệu, cảnh báo hết hàng
+- **Recipe Management**: Tạo và quản lý công thức sản phẩm
+- **Order Management**: Quản lý đơn hàng, trạng thái, tự động trừ kho
+- **AI Assistant**: Trợ lý AI với Google Gemini
+
+#### 🗄️ Database
+- 5 tables: `ingredients`, `products`, `recipe_items`, `orders`, `order_items`
+- Row Level Security (RLS) enabled
+- Auto-sync với debounce 500ms
+- Seed data tự động nếu database trống
+
+#### 📦 Tech Stack
+- React 19 + TypeScript
+- Vite 6
+- Supabase JS Client
+- Google Gemini AI
+- Recharts (Charts)
+- Lucide React (Icons)
+- Tailwind CSS
+
+#### 📚 Documentation
+- `README.md`: Overview và setup guide
+- `SUPABASE_SETUP.md`: Detailed Supabase setup
+- `QUICKSTART.md`: 5-minute quick start
+- `setup.sh`: Automated setup script
+
+---
+
+## Future Plans
+
+### 🔮 Upcoming Features
+- [ ] Multi-user support với authentication
+- [ ] In hóa đơn PDF
+- [ ] Báo cáo chi tiết theo thời gian
+- [ ] Thông báo đẩy cho đơn hàng sắp đến hạn
+- [ ] Export/Import dữ liệu Excel
+- [ ] Dark mode
+- [ ] PWA support (offline mode)
+
+---
+
+**Legend:**
+- ✨ Added: Tính năng mới
+- 🐛 Fixed: Bug fixes
+- 📚 Documentation: Cập nhật tài liệu
+- 🔒 Security: Bảo mật
+- ⚡ Performance: Tối ưu hiệu năng
+- 💄 UI: Cải thiện giao diện
+

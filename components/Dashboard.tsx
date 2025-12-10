@@ -4,7 +4,7 @@ import {
   PieChart, Pie, Cell, Legend
 } from 'recharts';
 import { Ingredient, Order, OrderStatus, Product } from '../types';
-import { TrendingUp, DollarSign, ShoppingBag, AlertCircle } from 'lucide-react';
+import { TrendingUp, DollarSign, ShoppingBag } from 'lucide-react';
 
 interface DashboardProps {
   orders: Order[];
@@ -44,10 +44,7 @@ const Dashboard: React.FC<DashboardProps> = ({ orders, products, ingredients }) 
 
   const totalProfit = totalRevenue - totalCost;
 
-  // 2. Low Stock Alerts
-  const lowStockIngredients = ingredients.filter(i => i.currentStock <= i.minThreshold);
-
-  // 3. Chart Data: Revenue last 7 days (Mock logic for simplicity if dates are scarce, else real)
+  // 2. Chart Data: Revenue last 7 days (Mock logic for simplicity if dates are scarce, else real)
   const last7Days = Array.from({length: 7}, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
@@ -167,24 +164,6 @@ const Dashboard: React.FC<DashboardProps> = ({ orders, products, ingredients }) 
              </div>
           </div>
       </div>
-
-      {/* Alerts Section */}
-      {lowStockIngredients.length > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6">
-              <div className="flex items-center gap-2 mb-4">
-                  <AlertCircle className="text-amber-600" />
-                  <h3 className="font-bold text-amber-800">Cảnh Báo Nguyên Liệu Sắp Hết</h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {lowStockIngredients.map(ing => (
-                      <div key={ing.id} className="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center">
-                          <span className="font-medium text-gray-700">{ing.name}</span>
-                          <span className="text-sm font-bold text-amber-600">{ing.currentStock} {ing.unit}</span>
-                      </div>
-                  ))}
-              </div>
-          </div>
-      )}
     </div>
   );
 };
