@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { Ingredient, Order, OrderStatus, Product, PaymentMethod, PaymentInfo } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Ingredient, Order, OrderStatus, Product, PaymentMethod, PaymentInfo, BankSettings } from '../types';
 import { Plus, Search, Calendar, CheckCircle, Clock, XCircle, ChevronDown, Save, Trash2, DollarSign, CreditCard, Banknote, Edit2 } from 'lucide-react';
+import { StorageService } from '../services/storageService';
+import QRCodeDisplay from './QRCodeDisplay';
 
 interface OrdersViewProps {
   orders: Order[];
@@ -15,12 +17,22 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [bankSettings, setBankSettings] = useState<BankSettings | null>(null);
   const [tempPayment, setTempPayment] = useState<PaymentInfo>({
     method: PaymentMethod.CASH,
     totalAmount: 0,
     paidAmount: 0,
     remainingAmount: 0
   });
+
+  // Load bank settings on mount
+  useEffect(() => {
+    const loadBankSettings = async () => {
+      const settings = await StorageService.getBankSettings();
+      setBankSettings(settings);
+    };
+    loadBankSettings();
+  }, []);
   
   // New Order State
   const [newOrder, setNewOrder] = useState<Partial<Order>>({
@@ -446,6 +458,21 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                 </div>
               </div>
 
+              {/* QR Code for Transfer */}
+              {tempPayment.method === PaymentMethod.TRANSFER && bankSettings && tempPayment.remainingAmount > 0 && (
+                <div className="border-t border-gray-200 pt-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <CreditCard size={16} className="text-rose-500" />
+                    Mã QR Chuyển Khoản
+                  </h4>
+                  <QRCodeDisplay
+                    bankSettings={bankSettings}
+                    amount={tempPayment.remainingAmount}
+                    description={`DH ${order.customerName}`}
+                  />
+                </div>
+              )}
+
               <div className="flex gap-3 mt-6">
                 <button 
                   onClick={() => setEditingPayment(null)} 
@@ -645,6 +672,21 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                        </div>
                      )}
                    </div>
+
+                   {/* QR Code for Transfer */}
+                   {newOrder.payment?.method === PaymentMethod.TRANSFER && bankSettings && newOrder.items && newOrder.items.length > 0 && (
+                     <div className="mt-4 border-t border-gray-200 pt-4">
+                       <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                         <CreditCard size={16} className="text-rose-500" />
+                         Mã QR Chuyển Khoản
+                       </h4>
+                       <QRCodeDisplay
+                         bankSettings={bankSettings}
+                         amount={calculateOrderTotal(newOrder.items) - (newOrder.payment?.paidAmount || 0)}
+                         description={`DH ${newOrder.customerName || 'Khach hang'}`}
+                       />
+                     </div>
+                   )}
                  </div>
                </div>
             </div>

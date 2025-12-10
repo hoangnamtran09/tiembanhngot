@@ -5,6 +5,7 @@ import InventoryView from './components/InventoryView';
 import RecipeView from './components/RecipeView';
 import OrdersView from './components/OrdersView';
 import AssistantView from './components/AssistantView';
+import BankSettingsView from './components/BankSettingsView';
 import { StorageService } from './services/storageService';
 import { Ingredient, Order, Product } from './types';
 import { Menu } from 'lucide-react';
@@ -122,6 +123,8 @@ const App: React.FC = () => {
         return <OrdersView orders={orders} products={products} ingredients={ingredients} setOrders={setOrders} updateStock={handleDeductInventory} />;
       case 'assistant':
         return <AssistantView ingredients={ingredients} products={products} />;
+      case 'settings':
+        return <BankSettingsView />;
       default:
         return <Dashboard orders={orders} products={products} ingredients={ingredients} />;
     }
@@ -153,7 +156,8 @@ const App: React.FC = () => {
                  { id: 'orders', label: 'Đơn Hàng' },
                  { id: 'inventory', label: 'Kho Nguyên Liệu' },
                  { id: 'recipes', label: 'Công Thức' },
-                 { id: 'assistant', label: 'Trợ Lý AI' }
+                 { id: 'assistant', label: 'Trợ Lý AI' },
+                 { id: 'settings', label: 'Cài Đặt Ngân Hàng' }
                ].map(item => (
                  <button
                    key={item.id}

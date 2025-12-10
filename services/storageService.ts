@@ -1,4 +1,4 @@
-import { Ingredient, Order, Product, RecipeItem, OrderItem } from '../types';
+import { Ingredient, Order, Product, RecipeItem, OrderItem, BankSettings } from '../types';
 import { INITIAL_INGREDIENTS, INITIAL_ORDERS, INITIAL_PRODUCTS } from '../constants';
 import { supabase } from './supabaseService';
 
@@ -257,6 +257,71 @@ export const StorageService = {
       }
     } catch (err) {
       console.error('Lỗi lưu orders:', err);
+    }
+  },
+
+  // ========== BANK SETTINGS ==========
+  getBankSettings: async (): Promise<BankSettings | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('bank_settings')
+        .select('*')
+        .eq('is_active', true)
+        .single();
+
+      if (error) {
+        console.error('Lỗi load bank settings:', error);
+        return null;
+      }
+
+      if (!data) return null;
+
+      return {
+        id: data.id,
+        bankId: data.bank_id,
+        bankName: data.bank_name,
+        accountNumber: data.account_number,
+        accountName: data.account_name,
+        isActive: data.is_active,
+        template: data.template || 'compact',
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
+    } catch (err) {
+      console.error('Lỗi load bank settings:', err);
+      return null;
+    }
+  },
+
+  saveBankSettings: async (settings: BankSettings): Promise<void> => {
+    try {
+      const dbSettings = {
+        bank_id: settings.bankId,
+        bank_name: settings.bankName,
+        account_number: settings.accountNumber,
+        account_name: settings.accountName,
+        is_active: settings.isActive,
+        template: settings.template || 'compact'
+      };
+
+      if (settings.id) {
+        // Update
+        const { error } = await supabase
+          .from('bank_settings')
+          .update(dbSettings)
+          .eq('id', settings.id);
+
+        if (error) throw error;
+      } else {
+        // Insert
+        const { error } = await supabase
+          .from('bank_settings')
+          .insert(dbSettings);
+
+        if (error) throw error;
+      }
+    } catch (err) {
+      console.error('Lỗi lưu bank settings:', err);
     }
   }
 };

@@ -74,3 +74,17 @@ export interface SalesStats {
   profit: number;
   ordersCount: number;
 }
+
+export type QRTemplate = 'compact' | 'compact2' | 'qr_only' | 'print';
+
+export interface BankSettings {
+  id?: number;
+  bankId: string; // Mã ngân hàng (VD: "970415")
+  bankName: string;
+  accountNumber: string;
+  accountName: string;
+  isActive: boolean;
+  template: QRTemplate;
+  createdAt?: string;
+  updatedAt?: string;
+}

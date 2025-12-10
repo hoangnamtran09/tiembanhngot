@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, ShoppingBag, Package, BookOpen, Sparkles, ChefHat } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Package, BookOpen, Sparkles, ChefHat, Settings } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -13,6 +13,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
     { id: 'inventory', label: 'Kho Nguyên Liệu', icon: <Package size={20} /> },
     { id: 'recipes', label: 'Công Thức & Cost', icon: <BookOpen size={20} /> },
     { id: 'assistant', label: 'Trợ Lý AI', icon: <Sparkles size={20} /> },
+    { id: 'settings', label: 'Cài Đặt Ngân Hàng', icon: <Settings size={20} /> },
   ];
 
   return (

@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2024-12-10
+
+### ✨ Added - QR Code Payment Integration
+- **Dynamic QR Code**: Tự động tạo mã QR chuyển khoản khi nhập số tiền
+- **VietQR API Integration**: Sử dụng API VietQR để generate QR code
+- **Bank Settings Management**:
+  - Trang cài đặt ngân hàng riêng biệt
+  - Hỗ trợ 16+ ngân hàng phổ biến tại Việt Nam
+  - Cấu hình số tài khoản, tên chủ TK
+  - 4 template QR: compact, compact2, qr_only, print
+- **QR Display in Orders**:
+  - Hiển thị QR khi tạo đơn hàng mới (nếu chọn chuyển khoản)
+  - Hiển thị QR trong modal chỉnh sửa thanh toán
+  - QR tự động cập nhật theo số tiền còn lại
+- **QRCodeDisplay Component**:
+  - Preview real-time mã QR
+  - Hiển thị đầy đủ thông tin: ngân hàng, số TK, số tiền
+  - Nút tải mã QR
+  - Hướng dẫn sử dụng
+
+### 💾 Database
+- **New Table**: `bank_settings` - Lưu cấu hình tài khoản ngân hàng
+- **Migration Script**: `supabase-bank-settings.sql`
+
+### 🎨 UI/UX
+- Menu item mới: "Cài Đặt Ngân Hàng" trong sidebar
+- Form cài đặt với password toggle cho số TK
+- QR preview live khi thay đổi cấu hình
+- Responsive design cho mobile
+
+---
+
 ## [1.2.1] - 2024-12-10
 
 ### 🗑️ Removed - Low Stock Warnings
