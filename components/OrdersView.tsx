@@ -526,9 +526,14 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                   <div className="col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Ngày trả hàng</label>
                     <input 
-                      type="datetime-local" 
-                      value={newOrder.deadline}
-                      onChange={e => setNewOrder({...newOrder, deadline: e.target.value})}
+                      type="date" 
+                      value={newOrder.deadline ? newOrder.deadline.split('T')[0] : ''}
+                      onChange={e => {
+                        const dateValue = e.target.value;
+                        // Convert to ISO date string (midnight UTC)
+                        const isoDate = dateValue ? new Date(dateValue + 'T00:00:00').toISOString() : '';
+                        setNewOrder({...newOrder, deadline: isoDate});
+                      }}
                       className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-rose-500 outline-none"
                     />
                   </div>
