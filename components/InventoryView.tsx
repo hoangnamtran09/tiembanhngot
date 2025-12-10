@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Ingredient, Unit } from '../types';
 import { Plus, Search, Edit2, Save, X, Trash2 } from 'lucide-react';
 import { formatCurrency, formatQuantity } from '../utils/format';
+import { getUnitConversionFactor } from '../utils/unitConverter';
+import { convertToUsageUnit } from '../utils/unitConverter';
 
 interface InventoryViewProps {
   ingredients: Ingredient[];
@@ -18,6 +20,7 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
   const [formData, setFormData] = useState<Partial<Ingredient>>({
     name: '',
     unit: Unit.KG,
+    usageUnit: Unit.GRAM,
     price: 0,
     buyingQuantity: 1,
     currentStock: 0,
@@ -33,6 +36,7 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
       setFormData({
         name: '',
         unit: Unit.KG,
+        usageUnit: Unit.GRAM,
         price: 0,
         buyingQuantity: 1,
         currentStock: 0,
@@ -112,6 +116,7 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
                 <th className="px-6 py-4">Tên Nguyên Liệu</th>
                 <th className="px-6 py-4">Tồn Kho</th>
                 <th className="px-6 py-4">Đơn Vị Mua</th>
+                <th className="px-6 py-4">Đơn Vị Sử Dụng</th>
                 <th className="px-6 py-4">Giá Mua</th>
                 <th className="px-6 py-4">Giá Vốn / Đơn Vị</th>
                 <th className="px-6 py-4 text-right">Thao Tác</th>
@@ -125,16 +130,22 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
                       {ing.name}
                     </td>
                     <td className="px-6 py-4 text-gray-600">
-                      {formatQuantity(ing.currentStock, ing.unit)}
+                      {formatQuantity(ing.currentStock, ing.usageUnit || ing.unit)}
                     </td>
                     <td className="px-6 py-4 text-gray-500">
                       {formatQuantity(ing.buyingQuantity, ing.unit)}
+                    </td>
+                    <td className="px-6 py-4 text-gray-500">
+                      <span className="font-medium">{ing.usageUnit || ing.unit}</span>
+                      {ing.unit !== ing.usageUnit && (
+                        <span className="text-xs text-gray-400 ml-1">(Mua: {ing.unit})</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-gray-600">
                       {formatCurrency(ing.price)}
                     </td>
                     <td className="px-6 py-4 text-gray-800 font-medium">
-                      {formatCurrency(Math.round(calculateUnitCost(ing)))} / {ing.unit}
+                      {formatCurrency(Math.round(calculateUnitCost(ing)))} / {ing.usageUnit || ing.unit}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -242,7 +253,7 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Đơn vị tính</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Đơn vị mua</label>
                   <select
                     value={formData.unit}
                     onChange={e => setFormData({...formData, unit: e.target.value as Unit})}
@@ -252,6 +263,29 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
                       <option key={u} value={u}>{u}</option>
                     ))}
                   </select>
+                  <p className="text-xs text-gray-500 mt-1">💵 Đơn vị khi mua nguyên liệu</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Đơn vị sử dụng <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    value={formData.usageUnit || formData.unit}
+                    onChange={e => setFormData({...formData, usageUnit: e.target.value as Unit})}
+                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-rose-500 outline-none"
+                  >
+                    {Object.values(Unit).map(u => (
+                      <option key={u} value={u}>{u}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">📝 Đơn vị khi nhập vào công thức</p>
+                  {formData.unit !== formData.usageUnit && (
+                    <p className="text-xs text-blue-600 mt-1 font-medium">
+                      ℹ️ Tự động chuyển đổi: {formData.unit === Unit.KG && formData.usageUnit === Unit.GRAM ? '1kg = 1000g' :
+                        formData.unit === Unit.LIT && formData.usageUnit === Unit.ML ? '1L = 1000ml' :
+                        '1:1'}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Giá nhập (VNĐ)</label>
@@ -277,13 +311,16 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
                   <p className="text-xs text-gray-500 mt-1">Lượng tương ứng với giá mua</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tồn kho hiện tại</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tồn kho hiện tại ({formData.usageUnit || formData.unit})
+                  </label>
                   <input 
                     type="number" 
                     value={formData.currentStock}
                     onChange={e => setFormData({...formData, currentStock: Number(e.target.value)})}
                     className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-rose-500 outline-none"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Tồn kho tính theo đơn vị sử dụng</p>
                 </div>
               </div>
 
@@ -298,11 +335,21 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
               </div>
 
               <div className="bg-rose-50 p-3 rounded-lg text-sm text-rose-800">
-                Giá vốn ước tính: <span className="font-bold">
-                  {formData.buyingQuantity && formData.price 
-                    ? formatCurrency(Math.round(formData.price / formData.buyingQuantity))
-                    : formatCurrency(0)} / {formData.unit}
+                <div className="mb-1">
+                  Giá vốn ước tính (theo {formData.usageUnit || formData.unit}): <span className="font-bold">
+                    {formData.buyingQuantity && formData.price && formData.unit && formData.usageUnit
+                      ? (() => {
+                          const buyingUnitCost = formData.price / formData.buyingQuantity;
+                          const conversionFactor = getUnitConversionFactor(formData.unit, formData.usageUnit);
+                          const usageUnitCost = buyingUnitCost / conversionFactor;
+                          return formatCurrency(Math.round(usageUnitCost));
+                        })()
+                      : formatCurrency(0)} / {formData.usageUnit || formData.unit}
                 </span>
+              </div>
+                <div className="text-xs text-gray-600">
+                  Mua: {formatQuantity(formData.buyingQuantity || 0, formData.unit || Unit.KG)} = {formatCurrency(formData.price || 0)}
+                </div>
               </div>
             </div>
 

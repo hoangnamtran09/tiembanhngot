@@ -1,12 +1,12 @@
 import { Ingredient, Order, OrderStatus, Product, Unit, PaymentMethod } from './types';
 
 export const INITIAL_INGREDIENTS: Ingredient[] = [
-  { id: '1', name: 'Bột mì đa dụng', unit: Unit.KG, price: 20000, buyingQuantity: 1, currentStock: 5000, minThreshold: 1000 },
-  { id: '2', name: 'Trứng gà', unit: Unit.QUA, price: 35000, buyingQuantity: 10, currentStock: 24, minThreshold: 10 },
-  { id: '3', name: 'Đường cát', unit: Unit.KG, price: 22000, buyingQuantity: 1, currentStock: 2000, minThreshold: 500 },
-  { id: '4', name: 'Sữa tươi không đường', unit: Unit.ML, price: 32000, buyingQuantity: 1000, currentStock: 800, minThreshold: 200 },
-  { id: '5', name: 'Bơ lạt', unit: Unit.KG, price: 250000, buyingQuantity: 1, currentStock: 400, minThreshold: 100 },
-  { id: '6', name: 'Chocolate đen 70%', unit: Unit.KG, price: 300000, buyingQuantity: 1, currentStock: 300, minThreshold: 100 },
+  { id: '1', name: 'Bột mì đa dụng', unit: Unit.KG, usageUnit: Unit.GRAM, price: 20000, buyingQuantity: 1, currentStock: 5000, minThreshold: 1000 },
+  { id: '2', name: 'Trứng gà', unit: Unit.QUA, usageUnit: Unit.QUA, price: 35000, buyingQuantity: 10, currentStock: 24, minThreshold: 10 },
+  { id: '3', name: 'Đường cát', unit: Unit.KG, usageUnit: Unit.GRAM, price: 22000, buyingQuantity: 1, currentStock: 2000, minThreshold: 500 },
+  { id: '4', name: 'Sữa tươi không đường', unit: Unit.ML, usageUnit: Unit.ML, price: 32000, buyingQuantity: 1000, currentStock: 800, minThreshold: 200 },
+  { id: '5', name: 'Bơ lạt', unit: Unit.KG, usageUnit: Unit.GRAM, price: 250000, buyingQuantity: 1, currentStock: 400, minThreshold: 100 },
+  { id: '6', name: 'Chocolate đen 70%', unit: Unit.KG, usageUnit: Unit.GRAM, price: 300000, buyingQuantity: 1, currentStock: 300, minThreshold: 100 },
 ];
 
 export const INITIAL_PRODUCTS: Product[] = [

@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2024-12-10
+
+### ✨ Enhanced - Dual Unit System
+- **Đơn Vị Mua vs Đơn Vị Sử Dụng**: Hệ thống hỗ trợ 2 đơn vị cho mỗi nguyên liệu
+  - **Đơn vị mua**: Đơn vị khi mua nguyên liệu (VD: mua theo kg)
+  - **Đơn vị sử dụng**: Đơn vị khi dùng trong công thức (VD: dùng theo g)
+- **Auto Conversion**: Tự động chuyển đổi giữa 2 đơn vị khi tính toán
+  - KG ↔ GRAM (1kg = 1000g)
+  - LIT ↔ ML (1L = 1000ml)
+  - Các đơn vị đếm (cái, quả, hộp) giữ nguyên
+- **UI Improvements**:
+  - Form nhập nguyên liệu: Chọn riêng đơn vị mua và đơn vị sử dụng
+  - Bảng nguyên liệu: Hiển thị cả 2 đơn vị
+  - Công thức: Nhập theo đơn vị sử dụng, hiển thị đơn vị mua trong tooltip
+  - Purchase Preparation: Hiển thị số lượng cần mua theo cả 2 đơn vị
+- **Cost Calculation**: Tính giá vốn chính xác với conversion
+  - RecipeView: Tính cost đúng với usageUnit
+  - Dashboard: Tính lợi nhuận đúng
+  - RevenueReportView: Tính chi phí đúng
+- **Database**: `usage_unit` column đã có trong schema
+
+### 🔧 Technical
+- Updated `unitConverter.ts` utilities
+- All cost calculations now use proper unit conversion
+- Consistent usageUnit throughout the app
+
+---
+
 ## [1.4.1] - 2024-12-10
 
 ### ✨ Added - Auto Number Formatting

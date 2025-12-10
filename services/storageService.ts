@@ -7,6 +7,7 @@ const mapIngredient = (dbIng: any): Ingredient => ({
   id: dbIng.id,
   name: dbIng.name,
   unit: dbIng.unit,
+  usageUnit: dbIng.usage_unit || dbIng.unit, // Fallback to unit if not set
   price: Number(dbIng.price),
   buyingQuantity: Number(dbIng.buying_quantity),
   currentStock: Number(dbIng.current_stock),
@@ -119,6 +120,7 @@ export const StorageService = {
           id: ing.id,
           name: ing.name,
           unit: ing.unit,
+          usage_unit: ing.usageUnit || ing.unit,
           price: ing.price,
           buying_quantity: ing.buyingQuantity,
           current_stock: ing.currentStock,

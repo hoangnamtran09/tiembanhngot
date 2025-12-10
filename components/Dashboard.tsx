@@ -6,6 +6,7 @@ import {
 import { Ingredient, Order, OrderStatus, Product } from '../types';
 import { TrendingUp, DollarSign, ShoppingBag } from 'lucide-react';
 import { formatCurrency, formatNumber } from '../utils/format';
+import { getUnitConversionFactor } from '../utils/unitConverter';
 
 interface DashboardProps {
   orders: Order[];
@@ -32,8 +33,16 @@ const Dashboard: React.FC<DashboardProps> = ({ orders, products, ingredients }) 
         const productCost = product.recipe.reduce((acc, recipeItem) => {
           const ing = ingredients.find(i => i.id === recipeItem.ingredientId);
           if (ing && ing.buyingQuantity > 0) {
-            const unitCost = ing.price / ing.buyingQuantity;
-            return acc + (unitCost * recipeItem.quantity);
+            // Calculate cost per buying unit
+            const costPerBuyingUnit = ing.price / ing.buyingQuantity;
+            
+            // Convert to usage unit cost
+            const usageUnit = ing.usageUnit || ing.unit;
+            const conversionFactor = getUnitConversionFactor(ing.unit, usageUnit);
+            const costPerUsageUnit = costPerBuyingUnit / conversionFactor;
+            
+            // recipeItem.quantity is in usageUnit
+            return acc + (costPerUsageUnit * recipeItem.quantity);
           }
           return acc;
         }, 0);

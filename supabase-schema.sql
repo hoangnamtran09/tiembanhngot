@@ -5,10 +5,11 @@
 CREATE TABLE IF NOT EXISTS ingredients (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  unit TEXT NOT NULL,
+  unit TEXT NOT NULL, -- Đơn vị mua (buying unit)
+  usage_unit TEXT NOT NULL DEFAULT 'g', -- Đơn vị sử dụng (usage unit)
   price DECIMAL(10, 2) NOT NULL,
   buying_quantity DECIMAL(10, 2) NOT NULL,
-  current_stock DECIMAL(10, 2) NOT NULL DEFAULT 0,
+  current_stock DECIMAL(10, 2) NOT NULL DEFAULT 0, -- Tồn kho theo usage_unit
   min_threshold DECIMAL(10, 2) NOT NULL DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

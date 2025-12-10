@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Ingredient, Product, RecipeItem } from '../types';
 import { Plus, Trash2, ChevronRight, Calculator, Check, Search, Edit2 } from 'lucide-react';
 import { formatCurrency, formatQuantity } from '../utils/format';
+import { getUnitConversionFactor } from '../utils/unitConverter';
 
 interface RecipeViewProps {
   products: Product[];
@@ -48,8 +49,17 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
     return recipe.reduce((total, item) => {
       const ing = ingredients.find(i => i.id === item.ingredientId);
       if (!ing || ing.buyingQuantity === 0) return total;
-      const unitCost = ing.price / ing.buyingQuantity;
-      return total + (unitCost * item.quantity);
+      
+      // Calculate cost per buying unit
+      const costPerBuyingUnit = ing.price / ing.buyingQuantity;
+      
+      // Convert to usage unit cost
+      const usageUnit = ing.usageUnit || ing.unit;
+      const conversionFactor = getUnitConversionFactor(ing.unit, usageUnit);
+      const costPerUsageUnit = costPerBuyingUnit / conversionFactor;
+      
+      // Calculate total cost for this item (quantity is in usageUnit)
+      return total + (costPerUsageUnit * item.quantity);
     }, 0);
   };
 
@@ -367,14 +377,28 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
                   {editForm.recipe?.map((item) => {
                     const ing = ingredients.find(i => i.id === item.ingredientId);
                     if (!ing) return null;
-                    const unitCost = ing.buyingQuantity > 0 ? ing.price / ing.buyingQuantity : 0;
-                    const itemCost = unitCost * item.quantity;
+                    
+                    // Calculate cost per buying unit
+                    const costPerBuyingUnit = ing.buyingQuantity > 0 ? ing.price / ing.buyingQuantity : 0;
+                    
+                    // Convert to usage unit cost
+                    const usageUnit = ing.usageUnit || ing.unit;
+                    const conversionFactor = getUnitConversionFactor(ing.unit, usageUnit);
+                    const costPerUsageUnit = costPerBuyingUnit / conversionFactor;
+                    
+                    // Calculate item cost (quantity is in usageUnit)
+                    const itemCost = costPerUsageUnit * item.quantity;
                     
                     return (
                       <div key={item.ingredientId} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
                          <div className="flex-1">
                             <p className="font-medium text-gray-800 text-sm">{ing.name}</p>
-                            <p className="text-xs text-gray-500">Giá gốc: {formatCurrency(Math.round(unitCost))} / {ing.unit}</p>
+                            <p className="text-xs text-gray-500">
+                              Giá gốc: {formatCurrency(Math.round(costPerUsageUnit))} / {usageUnit}
+                              {ing.unit !== usageUnit && (
+                                <span className="text-gray-400 ml-1">(Mua: {ing.unit})</span>
+                              )}
+                            </p>
                          </div>
                          <div className="flex items-center gap-2">
                             <input 
@@ -383,7 +407,7 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
                               onChange={(e) => updateIngredientQuantity(item.ingredientId, Number(e.target.value))}
                               className="w-20 border border-gray-300 rounded px-2 py-1 text-sm text-right focus:border-rose-500 outline-none"
                             />
-                            <span className="text-sm text-gray-500 w-8">{ing.unit}</span>
+                            <span className="text-sm text-gray-500 w-8">{ing.usageUnit || ing.unit}</span>
                          </div>
                          <div className="text-right w-24">
                             <p className="text-sm font-medium text-gray-800">{formatCurrency(Math.round(itemCost))}</p>

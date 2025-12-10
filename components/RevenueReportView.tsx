@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import { TrendingUp, DollarSign, Calendar, Filter } from 'lucide-react';
 import { formatCurrency, formatPercentage } from '../utils/format';
+import { getUnitConversionFactor } from '../utils/unitConverter';
 
 interface RevenueReportViewProps {
   orders: Order[];
@@ -70,8 +71,16 @@ const RevenueReportView: React.FC<RevenueReportViewProps> = ({
           product.recipe.forEach(recipeItem => {
             const ingredient = ingredients.find(i => i.id === recipeItem.ingredientId);
             if (ingredient && ingredient.buyingQuantity > 0) {
-              const unitCost = ingredient.price / ingredient.buyingQuantity;
-              totalCost += unitCost * recipeItem.quantity * item.quantity;
+              // Calculate cost per buying unit
+              const costPerBuyingUnit = ingredient.price / ingredient.buyingQuantity;
+              
+              // Convert to usage unit cost
+              const usageUnit = ingredient.usageUnit || ingredient.unit;
+              const conversionFactor = getUnitConversionFactor(ingredient.unit, usageUnit);
+              const costPerUsageUnit = costPerBuyingUnit / conversionFactor;
+              
+              // recipeItem.quantity is in usageUnit
+              totalCost += costPerUsageUnit * recipeItem.quantity * item.quantity;
             }
           });
         }
@@ -109,8 +118,16 @@ const RevenueReportView: React.FC<RevenueReportViewProps> = ({
           product.recipe.forEach(recipeItem => {
             const ingredient = ingredients.find(i => i.id === recipeItem.ingredientId);
             if (ingredient && ingredient.buyingQuantity > 0) {
-              const unitCost = ingredient.price / ingredient.buyingQuantity;
-              dayCost += unitCost * recipeItem.quantity * item.quantity;
+              // Calculate cost per buying unit
+              const costPerBuyingUnit = ingredient.price / ingredient.buyingQuantity;
+              
+              // Convert to usage unit cost
+              const usageUnit = ingredient.usageUnit || ingredient.unit;
+              const conversionFactor = getUnitConversionFactor(ingredient.unit, usageUnit);
+              const costPerUsageUnit = costPerBuyingUnit / conversionFactor;
+              
+              // recipeItem.quantity is in usageUnit
+              dayCost += costPerUsageUnit * recipeItem.quantity * item.quantity;
             }
           });
         }

@@ -11,10 +11,11 @@ export enum Unit {
 export interface Ingredient {
   id: string;
   name: string;
-  unit: Unit;
+  unit: Unit; // Đơn vị mua (buying unit) - VD: mua theo kg
+  usageUnit: Unit; // Đơn vị sử dụng (usage unit) - VD: dùng theo g
   price: number; // Price per buying unit
   buyingQuantity: number; // The amount bought for that price (to calc unit cost)
-  currentStock: number; // In base unit (e.g. g, ml, cai)
+  currentStock: number; // In usage unit (e.g. g, ml, cai)
   minThreshold: number; // Low stock alert level
 }
 

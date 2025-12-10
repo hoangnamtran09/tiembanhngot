@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Ingredient, Order, OrderStatus, Product, Unit } from '../types';
 import { ShoppingCart, Package, AlertCircle, CheckCircle } from 'lucide-react';
 import { formatQuantity, formatNumber } from '../utils/format';
+import { convertToBuyingUnit } from '../utils/unitConverter';
 
 interface PurchasePreparationViewProps {
   orders: Order[];
@@ -11,10 +12,11 @@ interface PurchasePreparationViewProps {
 
 interface RequiredIngredient {
   ingredient: Ingredient;
-  requiredQuantity: number; // Số lượng cần cho orders
-  currentStock: number; // Tồn kho hiện tại
-  needToBuy: number; // Số lượng cần mua
-  unit: Unit;
+  requiredQuantity: number; // Số lượng cần cho orders (theo usageUnit)
+  currentStock: number; // Tồn kho hiện tại (theo usageUnit)
+  needToBuy: number; // Số lượng cần mua (theo usageUnit)
+  usageUnit: Unit; // Đơn vị sử dụng
+  buyingUnit: Unit; // Đơn vị mua
 }
 
 const PurchasePreparationView: React.FC<PurchasePreparationViewProps> = ({
@@ -57,7 +59,8 @@ const PurchasePreparationView: React.FC<PurchasePreparationViewProps> = ({
               requiredQuantity: totalNeeded,
               currentStock: ingredient.currentStock,
               needToBuy: Math.max(0, totalNeeded - ingredient.currentStock),
-              unit: ingredient.unit
+              usageUnit: ingredient.usageUnit || ingredient.unit,
+              buyingUnit: ingredient.unit
             });
           }
         });
@@ -174,6 +177,9 @@ const PurchasePreparationView: React.FC<PurchasePreparationViewProps> = ({
                   <th className="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">
                     Đơn Vị
                   </th>
+                  <th className="px-6 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">
+                    Cần Mua (ĐV Mua)
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -186,16 +192,28 @@ const PurchasePreparationView: React.FC<PurchasePreparationViewProps> = ({
                       <div className="font-medium text-gray-800">{item.ingredient.name}</div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600 text-right">
-                      {formatQuantity(item.currentStock, item.unit)}
+                      {formatQuantity(item.currentStock, item.usageUnit)}
                     </td>
                     <td className="px-6 py-4 text-sm font-semibold text-amber-600 text-right">
-                      {formatQuantity(item.requiredQuantity, item.unit)}
+                      {formatQuantity(item.requiredQuantity, item.usageUnit)}
                     </td>
                     <td className="px-6 py-4 text-sm font-bold text-rose-600 text-right">
-                      {formatQuantity(item.needToBuy, item.unit)}
+                      {formatQuantity(item.needToBuy, item.usageUnit)}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500 text-right">
-                      {item.unit}
+                      {item.usageUnit}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 text-right">
+                      {item.usageUnit !== item.buyingUnit ? (
+                        <span className="text-amber-600 font-medium">
+                          {formatQuantity(
+                            convertToBuyingUnit(item.needToBuy, item.buyingUnit, item.usageUnit),
+                            item.buyingUnit
+                          )}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
                     </td>
                   </tr>
                 ))}
