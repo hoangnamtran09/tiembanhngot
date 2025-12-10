@@ -465,13 +465,11 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                     <CreditCard size={16} className="text-rose-500" />
                     Mã QR Chuyển Khoản
                   </h4>
-                  <div className="max-w-sm mx-auto">
-                    <QRCodeDisplay
-                      bankSettings={bankSettings}
-                      amount={tempPayment.remainingAmount}
-                      description={`DH ${order.customerName}`}
-                    />
-                  </div>
+                  <QRCodeDisplay
+                    bankSettings={bankSettings}
+                    amount={tempPayment.remainingAmount}
+                    description={`DH ${order.customerName}`}
+                  />
                 </div>
               )}
 
@@ -682,13 +680,11 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                          <CreditCard size={16} className="text-rose-500" />
                          Mã QR Chuyển Khoản
                        </h4>
-                       <div className="max-w-sm mx-auto">
-                         <QRCodeDisplay
-                           bankSettings={bankSettings}
-                           amount={calculateOrderTotal(newOrder.items) - (newOrder.payment?.paidAmount || 0)}
-                           description={`DH ${newOrder.customerName || 'Khach hang'}`}
-                         />
-                       </div>
+                       <QRCodeDisplay
+                         bankSettings={bankSettings}
+                         amount={calculateOrderTotal(newOrder.items) - (newOrder.payment?.paidAmount || 0)}
+                         description={`DH ${newOrder.customerName || 'Khach hang'}`}
+                       />
                      </div>
                    )}
                  </div>

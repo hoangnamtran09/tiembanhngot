@@ -18,6 +18,7 @@ const App: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   // Load Data on Mount (Async)
   useEffect(() => {
@@ -37,6 +38,7 @@ const App: React.FC = () => {
         console.error('Lỗi khi tải dữ liệu:', error);
       } finally {
         setIsLoading(false);
+        setHasLoadedOnce(true); // Mark as loaded
       }
     };
 
@@ -45,7 +47,8 @@ const App: React.FC = () => {
 
   // Persist Data on Change (Debounced)
   useEffect(() => {
-    if (isLoading || ingredients.length === 0) return;
+    // Only skip if not loaded yet, allow saving even if empty array (after delete all)
+    if (!hasLoadedOnce) return;
     
     const timer = setTimeout(async () => {
       setIsSyncing(true);
@@ -54,10 +57,11 @@ const App: React.FC = () => {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [ingredients, isLoading]);
+  }, [ingredients, hasLoadedOnce]);
 
   useEffect(() => {
-    if (isLoading || products.length === 0) return;
+    // Only skip if not loaded yet, allow saving even if empty array (after delete all)
+    if (!hasLoadedOnce) return;
     
     const timer = setTimeout(async () => {
       setIsSyncing(true);
@@ -66,10 +70,11 @@ const App: React.FC = () => {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [products, isLoading]);
+  }, [products, hasLoadedOnce]);
 
   useEffect(() => {
-    if (isLoading || orders.length === 0) return;
+    // Only skip if not loaded yet, allow saving even if empty array (after delete all)
+    if (!hasLoadedOnce) return;
     
     const timer = setTimeout(async () => {
       setIsSyncing(true);
@@ -78,7 +83,7 @@ const App: React.FC = () => {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [orders, isLoading]);
+  }, [orders, hasLoadedOnce]);
 
   // Inventory logic helper
   const handleDeductInventory = (orderItems: { productId: string; quantity: number }[]) => {
