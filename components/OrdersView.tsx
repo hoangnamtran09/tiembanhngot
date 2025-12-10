@@ -3,6 +3,7 @@ import { Ingredient, Order, OrderStatus, Product, PaymentMethod, PaymentInfo, Ba
 import { Plus, Search, Calendar, CheckCircle, Clock, XCircle, ChevronDown, Save, Trash2, DollarSign, CreditCard, Banknote, Edit2 } from 'lucide-react';
 import { StorageService } from '../services/storageService';
 import { formatCurrency, formatNumber } from '../utils/format';
+import InputCurrency from './InputCurrency';
 import QRCodeDisplay from './QRCodeDisplay';
 
 interface OrdersViewProps {
@@ -418,22 +419,17 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Số tiền đã {tempPayment.method === PaymentMethod.CASH ? 'trả' : 'chuyển'}
                   </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={tempPayment.paidAmount}
-                      onChange={(e) => {
-                        const paidAmount = Math.max(0, Number(e.target.value));
-                        setTempPayment({
-                          ...tempPayment,
-                          paidAmount: paidAmount,
-                          remainingAmount: tempPayment.totalAmount - paidAmount
-                        });
-                      }}
-                      className="w-full border-2 border-gray-200 rounded-lg p-3 pr-12 focus:ring-2 focus:ring-rose-500 outline-none font-semibold text-lg"
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">đ</span>
-                  </div>
+                  <InputCurrency
+                    value={tempPayment.paidAmount}
+                    onChange={(paidAmount) => {
+                      setTempPayment({
+                        ...tempPayment,
+                        paidAmount: paidAmount,
+                        remainingAmount: tempPayment.totalAmount - paidAmount
+                      });
+                    }}
+                    className="w-full border-2 border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-rose-500 outline-none font-semibold text-lg"
+                  />
                 </div>
 
                 {/* Summary */}
@@ -622,28 +618,23 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                      <label className="block text-sm font-medium text-gray-700 mb-2">
                        Số tiền đã {newOrder.payment?.method === PaymentMethod.CASH ? 'trả' : 'chuyển'}
                      </label>
-                     <div className="relative">
-                       <input
-                         type="number"
-                         value={newOrder.payment?.paidAmount || 0}
-                         onChange={(e) => {
-                           const paidAmount = Math.max(0, Number(e.target.value));
-                           const totalAmount = calculateOrderTotal(newOrder.items || []);
-                           setNewOrder({
-                             ...newOrder,
-                             payment: {
-                               ...newOrder.payment!,
-                               paidAmount: paidAmount,
-                               totalAmount: totalAmount,
-                               remainingAmount: totalAmount - paidAmount
-                             }
-                           });
-                         }}
-                         className="w-full border-2 border-gray-200 rounded-lg p-3 pr-12 focus:ring-2 focus:ring-rose-500 outline-none font-semibold"
-                         placeholder="0"
-                       />
-                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">đ</span>
-                     </div>
+                     <InputCurrency
+                       value={newOrder.payment?.paidAmount || 0}
+                       onChange={(paidAmount) => {
+                         const totalAmount = calculateOrderTotal(newOrder.items || []);
+                         setNewOrder({
+                           ...newOrder,
+                           payment: {
+                             ...newOrder.payment!,
+                             paidAmount: paidAmount,
+                             totalAmount: totalAmount,
+                             remainingAmount: totalAmount - paidAmount
+                           }
+                         });
+                       }}
+                       placeholder="0"
+                       className="w-full border-2 border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-rose-500 outline-none font-semibold"
+                     />
                      
                      {/* Remaining Amount Display */}
                      {newOrder.items && newOrder.items.length > 0 && (

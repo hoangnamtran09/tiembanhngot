@@ -80,6 +80,13 @@ ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 -- Tạo policies cho phép tất cả các thao tác (cho ứng dụng đơn giản)
 -- Bạn có thể tùy chỉnh policies này để bảo mật hơn
 
+-- Drop existing policies if they exist (to allow re-running this script)
+DROP POLICY IF EXISTS "Allow all operations on ingredients" ON ingredients;
+DROP POLICY IF EXISTS "Allow all operations on products" ON products;
+DROP POLICY IF EXISTS "Allow all operations on recipe_items" ON recipe_items;
+DROP POLICY IF EXISTS "Allow all operations on orders" ON orders;
+DROP POLICY IF EXISTS "Allow all operations on order_items" ON order_items;
+
 -- Ingredients policies
 CREATE POLICY "Allow all operations on ingredients" ON ingredients FOR ALL USING (true) WITH CHECK (true);
 
@@ -103,6 +110,12 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Drop existing triggers if they exist (to allow re-running this script)
+DROP TRIGGER IF EXISTS update_ingredients_updated_at ON ingredients;
+DROP TRIGGER IF EXISTS update_products_updated_at ON products;
+DROP TRIGGER IF EXISTS update_orders_updated_at ON orders;
+DROP TRIGGER IF EXISTS update_bank_settings_updated_at ON bank_settings;
 
 -- Triggers to auto-update updated_at
 CREATE TRIGGER update_ingredients_updated_at BEFORE UPDATE ON ingredients

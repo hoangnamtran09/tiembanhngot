@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BankSettings, QRTemplate } from '../types';
 import { StorageService } from '../services/storageService';
 import { Building2, Save, Eye, EyeOff } from 'lucide-react';
+import InputCurrency from './InputCurrency';
 import QRCodeDisplay from './QRCodeDisplay';
 
 const BankSettingsView: React.FC = () => {
@@ -224,14 +225,11 @@ const BankSettingsView: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Số tiền mẫu (để xem trước)
                 </label>
-                <input
-                  type="number"
+                <InputCurrency
                   value={previewAmount}
-                  onChange={(e) => setPreviewAmount(Number(e.target.value))}
-                  className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-rose-500 outline-none"
+                  onChange={(amount) => setPreviewAmount(amount)}
                   placeholder="100000"
-                  min="0"
-                  step="10000"
+                  className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-rose-500 outline-none"
                 />
               </div>
 

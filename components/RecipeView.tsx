@@ -3,6 +3,7 @@ import { Ingredient, Product, RecipeItem } from '../types';
 import { Plus, Trash2, ChevronRight, Calculator, Check, Search, Edit2 } from 'lucide-react';
 import { formatCurrency, formatQuantity } from '../utils/format';
 import { getUnitConversionFactor } from '../utils/unitConverter';
+import InputCurrency from './InputCurrency';
 
 interface RecipeViewProps {
   products: Product[];
@@ -283,10 +284,9 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
                  </div>
                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Giá bán (VNĐ)</label>
-                    <input 
-                      type="number" 
-                      value={editForm.sellingPrice}
-                      onChange={e => setEditForm({...editForm, sellingPrice: Number(e.target.value)})}
+                    <InputCurrency
+                      value={editForm.sellingPrice || 0}
+                      onChange={(sellingPrice) => setEditForm({...editForm, sellingPrice})}
                       className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-rose-500 outline-none"
                     />
                  </div>

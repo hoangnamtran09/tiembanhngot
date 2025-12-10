@@ -3,6 +3,7 @@ import { Ingredient, Unit } from '../types';
 import { Plus, Search, Edit2, Save, X, Trash2 } from 'lucide-react';
 import { formatCurrency, formatQuantity } from '../utils/format';
 import { getUnitConversionFactor } from '../utils/unitConverter';
+import InputCurrency from './InputCurrency';
 import { convertToUsageUnit } from '../utils/unitConverter';
 
 interface InventoryViewProps {
@@ -289,10 +290,9 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Giá nhập (VNĐ)</label>
-                  <input 
-                    type="number" 
-                    value={formData.price}
-                    onChange={e => setFormData({...formData, price: Number(e.target.value)})}
+                  <InputCurrency
+                    value={formData.price || 0}
+                    onChange={(price) => setFormData({...formData, price})}
                     className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-rose-500 outline-none"
                   />
                 </div>
