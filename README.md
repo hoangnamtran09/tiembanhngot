@@ -130,6 +130,33 @@ npm run build    # Build for production
 npm run preview  # Preview production build
 ```
 
+## 🚀 Deploy to Vercel
+
+### Quick Deploy:
+
+```bash
+# Push to GitHub
+git add .
+git commit -m "Ready to deploy"
+git push
+
+# Deploy script (optional)
+./deploy-vercel.sh
+```
+
+### Manual Deploy:
+
+1. Push code to GitHub
+2. Visit [vercel.com](https://vercel.com)
+3. Import Git Repository
+4. Add Environment Variables:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_GEMINI_API_KEY` (optional)
+5. Deploy!
+
+**📖 Xem hướng dẫn chi tiết:** [VERCEL_DEPLOY.md](./VERCEL_DEPLOY.md)
+
 ## 📄 License
 
 MIT
