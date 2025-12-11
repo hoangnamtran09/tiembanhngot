@@ -32,42 +32,6 @@ Hệ thống quản lý tiệm bánh giúp bạn:
 
 ---
 
-## ⚙️ Cài Đặt
-
-### Bước 1: Cài đặt Dependencies
-
-```bash
-npm install
-```
-
-### Bước 2: Cấu hình Supabase
-
-1. Tạo tài khoản tại [supabase.com](https://supabase.com)
-2. Tạo project mới
-3. Vào **SQL Editor** và chạy các file SQL theo thứ tự:
-   - `supabase-schema.sql` (tạo bảng cơ bản)
-   - `supabase-bank-settings.sql` (tạo bảng cài đặt ngân hàng)
-   - `supabase-migration-new-features.sql` (tạo bảng tính năng mới)
-
-### Bước 3: Cấu hình Environment Variables
-
-Tạo file `.env.local`:
-
-```env
-VITE_SUPABASE_URL=your-project-url.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_GEMINI_API_KEY=your-gemini-key (optional)
-```
-
-### Bước 4: Chạy ứng dụng
-
-```bash
-npm run dev
-```
-
-Truy cập: `http://localhost:5173`
-
----
 
 ## 📦 Quản Lý Nguyên Liệu
 
