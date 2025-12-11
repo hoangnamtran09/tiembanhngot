@@ -112,7 +112,7 @@ const App: React.FC = () => {
       return (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500 mb-4"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mb-4"></div>
             <p className="text-gray-600">Đang tải dữ liệu từ Supabase...</p>
           </div>
         </div>
@@ -142,15 +142,15 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#fdf2f8]">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 w-full bg-white z-20 border-b border-gray-100 flex items-center justify-between p-4 shadow-sm">
-        <h1 className="text-lg font-bold text-gray-800">Tiệm Bánh Ngọt</h1>
+      <div className="md:hidden fixed top-0 w-full bg-white z-20 border-b border-gray-200 flex items-center justify-between p-4">
+        <h1 className="text-lg font-bold text-gray-900">Tiệm Bánh Ngọt</h1>
         <div className="flex items-center gap-2">
           {isSyncing && (
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-rose-500"></div>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
           )}
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-gray-600">
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-gray-700">
             <Menu />
           </button>
         </div>
@@ -161,7 +161,7 @@ const App: React.FC = () => {
         <div className="md:hidden fixed inset-0 bg-black/50 z-30" onClick={() => setIsMobileMenuOpen(false)}>
           <div className="bg-white w-64 h-full pt-16" onClick={e => e.stopPropagation()}>
              {/* Re-use simplified sidebar logic for mobile */}
-             <div className="flex flex-col gap-2 p-4">
+             <div className="flex flex-col gap-1 p-4">
                {[
                  { id: 'dashboard', label: 'Tổng Quan' },
                  { id: 'orders', label: 'Đơn Hàng' },
@@ -175,7 +175,7 @@ const App: React.FC = () => {
                  <button
                    key={item.id}
                    onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }}
-                   className={`text-left px-4 py-3 rounded-lg font-medium ${activeTab === item.id ? 'bg-rose-500 text-white' : 'text-gray-600'}`}
+                   className={`text-left px-4 py-2.5 rounded-lg font-medium text-sm ${activeTab === item.id ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                  >
                    {item.label}
                  </button>

@@ -1,4 +1,4 @@
-import { Ingredient, Order, Product, RecipeItem, OrderItem, BankSettings } from '../types';
+import { Ingredient, Order, Product, RecipeItem, OrderItem, BankSettings, Customer, PurchaseRecord, OtherExpense, StockTransaction } from '../types';
 import { INITIAL_INGREDIENTS, INITIAL_ORDERS, INITIAL_PRODUCTS } from '../constants';
 import { supabase } from './supabaseService';
 
@@ -21,6 +21,7 @@ const mapProduct = (dbProd: any, recipeItems: any[]): Product => ({
   description: dbProd.description || '',
   sellingPrice: Number(dbProd.selling_price),
   category: dbProd.category,
+  imageUrl: dbProd.image_url || undefined,
   recipe: recipeItems
     .filter((ri: any) => ri.product_id === dbProd.id)
     .map((ri: any) => ({
@@ -211,7 +212,8 @@ export const StorageService = {
           name: p.name,
           description: p.description,
           selling_price: p.sellingPrice,
-          category: p.category
+          category: p.category,
+          image_url: p.imageUrl || null
         }));
 
         const { error: prodError } = await supabase
@@ -406,6 +408,216 @@ export const StorageService = {
       }
     } catch (err) {
       console.error('Lỗi lưu bank settings:', err);
+    }
+  },
+
+  // ========== CUSTOMERS ==========
+  getCustomers: async (): Promise<Customer[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      if (!data) return [];
+
+      return data.map((c: any) => ({
+        id: c.id,
+        name: c.name,
+        phone: c.phone,
+        email: c.email || undefined,
+        address: c.address || undefined,
+        notes: c.notes || undefined,
+        createdAt: c.created_at,
+        updatedAt: c.updated_at
+      }));
+    } catch (err) {
+      console.error('Lỗi load customers:', err);
+      return [];
+    }
+  },
+
+  saveCustomers: async (customers: Customer[]): Promise<void> => {
+    try {
+      const currentIds = customers.map(c => c.id);
+      const { data: existingData } = await supabase.from('customers').select('id');
+      const existingIds = existingData?.map(d => d.id) || [];
+      const idsToDelete = existingIds.filter(id => !currentIds.includes(id));
+
+      if (idsToDelete.length > 0) {
+        await supabase.from('customers').delete().in('id', idsToDelete);
+      }
+
+      if (customers.length > 0) {
+        const dbCustomers = customers.map(c => ({
+          id: c.id,
+          name: c.name,
+          phone: c.phone,
+          email: c.email || null,
+          address: c.address || null,
+          notes: c.notes || null
+        }));
+
+        await supabase.from('customers').upsert(dbCustomers, { onConflict: 'id' });
+      }
+    } catch (err) {
+      console.error('Lỗi lưu customers:', err);
+    }
+  },
+
+  // ========== PURCHASE RECORDS ==========
+  getPurchaseRecords: async (): Promise<PurchaseRecord[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('purchase_records')
+        .select('*')
+        .order('purchase_date', { ascending: false });
+
+      if (error) throw error;
+      if (!data) return [];
+
+      return data.map((pr: any) => ({
+        id: pr.id,
+        ingredientId: pr.ingredient_id,
+        quantity: Number(pr.quantity),
+        price: Number(pr.price),
+        purchaseDate: pr.purchase_date,
+        supplier: pr.supplier || undefined,
+        notes: pr.notes || undefined,
+        createdAt: pr.created_at
+      }));
+    } catch (err) {
+      console.error('Lỗi load purchase records:', err);
+      return [];
+    }
+  },
+
+  savePurchaseRecord: async (record: PurchaseRecord): Promise<void> => {
+    try {
+      const dbRecord = {
+        id: record.id,
+        ingredient_id: record.ingredientId,
+        quantity: record.quantity,
+        price: record.price,
+        purchase_date: record.purchaseDate,
+        supplier: record.supplier || null,
+        notes: record.notes || null
+      };
+
+      await supabase.from('purchase_records').upsert(dbRecord, { onConflict: 'id' });
+    } catch (err) {
+      console.error('Lỗi lưu purchase record:', err);
+    }
+  },
+
+  deletePurchaseRecord: async (id: string): Promise<void> => {
+    try {
+      await supabase.from('purchase_records').delete().eq('id', id);
+    } catch (err) {
+      console.error('Lỗi xóa purchase record:', err);
+    }
+  },
+
+  // ========== OTHER EXPENSES ==========
+  getOtherExpenses: async (): Promise<OtherExpense[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('other_expenses')
+        .select('*')
+        .order('expense_date', { ascending: false });
+
+      if (error) throw error;
+      if (!data) return [];
+
+      return data.map((e: any) => ({
+        id: e.id,
+        category: e.category,
+        amount: Number(e.amount),
+        description: e.description,
+        expenseDate: e.expense_date,
+        createdAt: e.created_at
+      }));
+    } catch (err) {
+      console.error('Lỗi load other expenses:', err);
+      return [];
+    }
+  },
+
+  saveOtherExpense: async (expense: OtherExpense): Promise<void> => {
+    try {
+      const dbExpense = {
+        id: expense.id,
+        category: expense.category,
+        amount: expense.amount,
+        description: expense.description,
+        expense_date: expense.expenseDate
+      };
+
+      await supabase.from('other_expenses').upsert(dbExpense, { onConflict: 'id' });
+    } catch (err) {
+      console.error('Lỗi lưu other expense:', err);
+    }
+  },
+
+  deleteOtherExpense: async (id: string): Promise<void> => {
+    try {
+      await supabase.from('other_expenses').delete().eq('id', id);
+    } catch (err) {
+      console.error('Lỗi xóa other expense:', err);
+    }
+  },
+
+  // ========== STOCK TRANSACTIONS ==========
+  getStockTransactions: async (): Promise<StockTransaction[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('stock_transactions')
+        .select('*')
+        .order('transaction_date', { ascending: false });
+
+      if (error) throw error;
+      if (!data) return [];
+
+      return data.map((st: any) => ({
+        id: st.id,
+        ingredientId: st.ingredient_id,
+        type: st.type as 'IN' | 'OUT',
+        quantity: Number(st.quantity),
+        reason: st.reason,
+        notes: st.notes || undefined,
+        transactionDate: st.transaction_date,
+        createdAt: st.created_at
+      }));
+    } catch (err) {
+      console.error('Lỗi load stock transactions:', err);
+      return [];
+    }
+  },
+
+  saveStockTransaction: async (transaction: StockTransaction): Promise<void> => {
+    try {
+      const dbTransaction = {
+        id: transaction.id,
+        ingredient_id: transaction.ingredientId,
+        type: transaction.type,
+        quantity: transaction.quantity,
+        reason: transaction.reason,
+        notes: transaction.notes || null,
+        transaction_date: transaction.transactionDate
+      };
+
+      await supabase.from('stock_transactions').upsert(dbTransaction, { onConflict: 'id' });
+    } catch (err) {
+      console.error('Lỗi lưu stock transaction:', err);
+    }
+  },
+
+  deleteStockTransaction: async (id: string): Promise<void> => {
+    try {
+      await supabase.from('stock_transactions').delete().eq('id', id);
+    } catch (err) {
+      console.error('Lỗi xóa stock transaction:', err);
     }
   }
 };

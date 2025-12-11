@@ -170,7 +170,7 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
                 <p className="text-sm text-gray-500 mt-1">{product.description}</p>
                 <div className="mt-3 space-y-1 text-sm text-gray-600">
                   <p>• Danh mục: <span className="font-medium">{product.category}</span></p>
-                  <p>• Giá bán: <span className="font-medium text-rose-600">{formatCurrency(product.sellingPrice)}</span></p>
+                  <p>• Giá bán: <span className="font-medium text-gray-900">{formatCurrency(product.sellingPrice)}</span></p>
                   <p>• Giá vốn: <span className="font-medium">{formatCurrency(Math.round(productCost))}</span></p>
                   <p>• Lợi nhuận: <span className="font-medium text-green-600">{formatCurrency(Math.round(profit))}</span></p>
                   <p>• Số nguyên liệu: <span className="font-medium">{product.recipe.length} loại</span></p>
@@ -205,7 +205,7 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
             <h2 className="font-bold text-gray-800 text-lg">Danh Sách Bánh</h2>
             <button 
               onClick={handleCreateNew}
-              className="p-2 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors"
+              className="p-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
             >
               <Plus size={20} />
             </button>
@@ -214,8 +214,8 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
             {products.map(product => (
               <div 
                 key={product.id}
-                className={`p-4 border-b border-gray-50 transition-colors hover:bg-rose-50/50 group ${
-                  selectedProduct?.id === product.id && !isCreating ? 'bg-rose-50 border-rose-200' : ''
+                className={`p-4 border-b border-gray-50 transition-colors hover:bg-gray-50/50 group ${
+                  selectedProduct?.id === product.id && !isCreating ? 'bg-gray-50 border-gray-200' : ''
                 }`}
               >
                 <div className="flex justify-between items-start mb-1">
@@ -244,7 +244,7 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
                   onClick={() => handleEdit(product)}
                 >
                   <span>Giá bán: {formatCurrency(product.sellingPrice)}</span>
-                  <span className="flex items-center gap-1 text-rose-500">
+                  <span className="flex items-center gap-1 text-gray-700">
                      <ChevronRight size={14} />
                   </span>
                 </div>
@@ -260,7 +260,7 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
             {/* Header Info */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
               <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <Edit2 size={18} className="text-rose-500"/> 
+                <Edit2 size={18} className="text-gray-700"/> 
                 Thông Tin Cơ Bản
               </h3>
               <div className="grid grid-cols-2 gap-6">
@@ -270,7 +270,7 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
                       type="text" 
                       value={editForm.name}
                       onChange={e => setEditForm({...editForm, name: e.target.value})}
-                      className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-rose-500 outline-none"
+                      className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-gray-900 outline-none"
                     />
                  </div>
                  <div className="col-span-2">
@@ -279,7 +279,7 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
                       type="text" 
                       value={editForm.description}
                       onChange={e => setEditForm({...editForm, description: e.target.value})}
-                      className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-rose-500 outline-none"
+                      className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-gray-900 outline-none"
                     />
                  </div>
                  <div>
@@ -287,15 +287,35 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
                     <InputCurrency
                       value={editForm.sellingPrice || 0}
                       onChange={(sellingPrice) => setEditForm({...editForm, sellingPrice})}
-                      className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-rose-500 outline-none"
+                      className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-gray-900 outline-none"
                     />
+                 </div>
+                 <div className="col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">URL Hình ảnh</label>
+                    <input 
+                      type="text" 
+                      value={editForm.imageUrl || ''}
+                      onChange={e => setEditForm({...editForm, imageUrl: e.target.value})}
+                      placeholder="https://example.com/image.jpg"
+                      className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-gray-900 outline-none"
+                    />
+                    {editForm.imageUrl && (
+                      <img 
+                        src={editForm.imageUrl} 
+                        alt="Preview" 
+                        className="mt-2 w-32 h-32 object-cover rounded-lg border border-gray-200"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    )}
                  </div>
                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
                     <select
                       value={editForm.category}
                       onChange={e => setEditForm({...editForm, category: e.target.value})}
-                      className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-rose-500 outline-none"
+                      className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-gray-900 outline-none"
                     >
                       <option value="Cake">Bánh Kem / Gato</option>
                       <option value="Bread">Bánh Mì</option>
@@ -311,14 +331,14 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                    <Calculator size={18} className="text-rose-500"/>
+                    <Calculator size={18} className="text-gray-700"/>
                     Công Thức & Costing
                   </h3>
                   
                   <div className="relative" ref={dropdownRef}>
                      <button 
                        onClick={() => setIsAddIngredientOpen(!isAddIngredientOpen)}
-                       className="flex items-center gap-2 text-sm text-rose-600 font-medium hover:bg-rose-50 px-3 py-1.5 rounded-lg transition-colors"
+                       className="flex items-center gap-2 text-sm text-gray-700 font-medium hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
                      >
                        <Plus size={16} /> Thêm nguyên liệu
                      </button>
@@ -348,7 +368,7 @@ const RecipeView: React.FC<RecipeViewProps> = ({ products, ingredients, setProdu
                                     className={`px-3 py-2 rounded cursor-pointer text-sm flex justify-between items-center ${
                                       alreadyAdded 
                                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                                        : 'hover:bg-rose-50 hover:text-rose-700'
+                                        : 'hover:bg-gray-50 hover:text-gray-700'
                                     }`}
                                   >
                                     <span className="truncate">{ing.name}</span>

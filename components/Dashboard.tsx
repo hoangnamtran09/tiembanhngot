@@ -86,70 +86,70 @@ const Dashboard: React.FC<DashboardProps> = ({ orders, products, ingredients }) 
       value: productSales[key]
   })).sort((a,b) => b.value - a.value).slice(0, 5); // Top 5
 
-  const COLORS = ['#f43f5e', '#fb923c', '#fbbf24', '#a3e635', '#22d3ee'];
+  const COLORS = ['#1f2937', '#4b5563', '#6b7280', '#9ca3af', '#d1d5db'];
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8 pb-20 md:pb-6">
+    <div className="p-6 max-w-7xl mx-auto space-y-6 pb-20 md:pb-6">
       <div className="mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">Tổng Quan Kinh Doanh</h2>
-        <p className="text-gray-500">Theo dõi hiệu quả hoạt động của tiệm bánh</p>
+        <h2 className="text-2xl font-bold text-gray-900">Tổng Quan Kinh Doanh</h2>
+        <p className="text-gray-600 text-sm mt-1">Theo dõi hiệu quả hoạt động của tiệm bánh</p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-rose-100 flex items-center justify-between">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white p-5 rounded-lg border border-gray-200 flex items-center justify-between">
             <div>
-                <p className="text-gray-500 font-medium text-sm">Doanh Thu (Thực tế)</p>
-                <h3 className="text-2xl font-bold text-gray-800 mt-1">{formatCurrency(totalRevenue)}</h3>
+                <p className="text-gray-600 text-sm font-medium">Doanh Thu</p>
+                <h3 className="text-2xl font-bold text-gray-900 mt-1">{formatCurrency(totalRevenue)}</h3>
             </div>
-            <div className="p-3 bg-rose-50 rounded-full text-rose-500">
+            <div className="p-3 bg-gray-100 rounded-lg text-gray-700">
                 <DollarSign size={24} />
             </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-green-100 flex items-center justify-between">
+        <div className="bg-white p-5 rounded-lg border border-gray-200 flex items-center justify-between">
             <div>
-                <p className="text-gray-500 font-medium text-sm">Lợi Nhuận Ước Tính</p>
-                <h3 className="text-2xl font-bold text-green-600 mt-1">{formatCurrency(totalProfit)}</h3>
-                <p className="text-xs text-green-500 mt-1">Margin: {totalRevenue > 0 ? ((totalProfit/totalRevenue)*100).toFixed(1) : 0}%</p>
+                <p className="text-gray-600 text-sm font-medium">Lợi Nhuận</p>
+                <h3 className="text-2xl font-bold text-gray-900 mt-1">{formatCurrency(totalProfit)}</h3>
+                <p className="text-xs text-gray-500 mt-1">Margin: {totalRevenue > 0 ? ((totalProfit/totalRevenue)*100).toFixed(1) : 0}%</p>
             </div>
-            <div className="p-3 bg-green-50 rounded-full text-green-500">
+            <div className="p-3 bg-gray-100 rounded-lg text-gray-700">
                 <TrendingUp size={24} />
             </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-blue-100 flex items-center justify-between">
+        <div className="bg-white p-5 rounded-lg border border-gray-200 flex items-center justify-between">
             <div>
-                <p className="text-gray-500 font-medium text-sm">Đơn Hoàn Thành</p>
-                <h3 className="text-2xl font-bold text-gray-800 mt-1">{completedOrders.length}</h3>
+                <p className="text-gray-600 text-sm font-medium">Đơn Hoàn Thành</p>
+                <h3 className="text-2xl font-bold text-gray-900 mt-1">{completedOrders.length}</h3>
             </div>
-            <div className="p-3 bg-blue-50 rounded-full text-blue-500">
+            <div className="p-3 bg-gray-100 rounded-lg text-gray-700">
                 <ShoppingBag size={24} />
             </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Main Chart */}
-          <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-             <h3 className="font-bold text-gray-800 mb-6">Doanh Thu 7 Ngày Qua</h3>
+          <div className="lg:col-span-2 bg-white p-5 rounded-lg border border-gray-200">
+             <h3 className="font-semibold text-gray-900 mb-4">Doanh Thu 7 Ngày Qua</h3>
              <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0"/>
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-                        <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} tickFormatter={(value) => `${value/1000}k`} />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb"/>
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} />
+                        <YAxis axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} tickFormatter={(value) => `${value/1000}k`} />
                         <Tooltip 
-                            contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
+                            contentStyle={{borderRadius: '6px', border: '1px solid #e5e7eb', backgroundColor: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.1)'}}
                             formatter={(value: number) => [formatCurrency(value), 'Doanh thu']}
                         />
-                        <Bar dataKey="revenue" fill="#fb7185" radius={[4, 4, 0, 0]} barSize={40} />
+                        <Bar dataKey="revenue" fill="#1f2937" radius={[4, 4, 0, 0]} barSize={40} />
                     </BarChart>
                 </ResponsiveContainer>
              </div>
           </div>
 
           {/* Pie Chart / Top Products */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-             <h3 className="font-bold text-gray-800 mb-2">Sản Phẩm Bán Chạy</h3>
+          <div className="bg-white p-5 rounded-lg border border-gray-200">
+             <h3 className="font-semibold text-gray-900 mb-4">Sản Phẩm Bán Chạy</h3>
              <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -160,7 +160,7 @@ const Dashboard: React.FC<DashboardProps> = ({ orders, products, ingredients }) 
                             innerRadius={60}
                             outerRadius={80}
                             fill="#8884d8"
-                            paddingAngle={5}
+                            paddingAngle={2}
                             dataKey="value"
                         >
                             {pieData.map((entry, index) => (
@@ -168,7 +168,7 @@ const Dashboard: React.FC<DashboardProps> = ({ orders, products, ingredients }) 
                             ))}
                         </Pie>
                         <Tooltip />
-                        <Legend verticalAlign="bottom" height={36}/>
+                        <Legend verticalAlign="bottom" height={36} wrapperStyle={{fontSize: '12px'}}/>
                     </PieChart>
                 </ResponsiveContainer>
              </div>

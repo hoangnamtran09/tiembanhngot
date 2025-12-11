@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Ingredient, Order, OrderStatus, Product, PaymentMethod, PaymentInfo, BankSettings } from '../types';
-import { Plus, Search, Calendar, CheckCircle, Clock, XCircle, ChevronDown, Save, Trash2, DollarSign, CreditCard, Banknote, Edit2 } from 'lucide-react';
+import { Plus, Search, Calendar, CheckCircle, Clock, XCircle, ChevronDown, Save, Trash2, DollarSign, CreditCard, Banknote, Edit2, Printer } from 'lucide-react';
 import { StorageService } from '../services/storageService';
 import { formatCurrency, formatNumber } from '../utils/format';
 import InputCurrency from './InputCurrency';
 import QRCodeDisplay from './QRCodeDisplay';
+import InvoicePrint from './InvoicePrint';
 
 interface OrdersViewProps {
   orders: Order[];
@@ -19,6 +20,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [printInvoice, setPrintInvoice] = useState<string | null>(null);
   const [bankSettings, setBankSettings] = useState<BankSettings | null>(null);
   const [tempPayment, setTempPayment] = useState<PaymentInfo>({
     method: PaymentMethod.CASH,
@@ -54,10 +56,11 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
 
   const getStatusColor = (status: OrderStatus) => {
     switch (status) {
-      case OrderStatus.COMPLETED: return 'bg-green-100 text-green-700';
-      case OrderStatus.IN_PROGRESS: return 'bg-blue-100 text-blue-700';
-      case OrderStatus.CANCELLED: return 'bg-red-100 text-red-700';
-      default: return 'bg-amber-100 text-amber-700';
+      case OrderStatus.COMPLETED: return 'bg-gray-100 text-gray-700';
+      case OrderStatus.DELIVERED: return 'bg-gray-200 text-gray-800';
+      case OrderStatus.IN_PROGRESS: return 'bg-gray-100 text-gray-700';
+      case OrderStatus.CANCELLED: return 'bg-gray-100 text-gray-500';
+      default: return 'bg-gray-100 text-gray-700';
     }
   };
 
@@ -182,7 +185,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
         <h2 className="text-2xl font-bold text-gray-800">Đơn Hàng</h2>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm transition-colors"
+          className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
         >
           <Plus size={20} />
           <span>Tạo Đơn Mới</span>
@@ -200,7 +203,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
            <button 
             key={status}
             onClick={() => setFilterStatus(status)}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${filterStatus === status ? 'bg-rose-500 text-white' : 'bg-white text-gray-600 border border-gray-200'}`}
+            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${filterStatus === status ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 border border-gray-200'}`}
            >
              {status}
            </button>
@@ -243,7 +246,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                  <span className="text-sm text-gray-500 flex items-center gap-1">
                    <Calendar size={14} /> {new Date(order.deadline).toLocaleDateString('vi-VN')}
                  </span>
-                 <span className="text-lg font-bold text-rose-600">
+                 <span className="text-lg font-bold text-gray-900">
                    {formatCurrency(calculateOrderTotal(order.items))}
                  </span>
               </div>
@@ -292,7 +295,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                 {order.status === OrderStatus.PENDING && (
                   <button 
                     onClick={() => handleStatusChange(order.id, OrderStatus.IN_PROGRESS)}
-                    className="flex-1 bg-blue-50 text-blue-600 py-2 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
+                    className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
                   >
                     Làm bánh
                   </button>
@@ -300,9 +303,17 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                 {order.status === OrderStatus.IN_PROGRESS && (
                   <button 
                     onClick={() => handleStatusChange(order.id, OrderStatus.COMPLETED)}
-                    className="flex-1 bg-green-50 text-green-600 py-2 rounded-lg text-sm font-medium hover:bg-green-100 transition-colors"
+                    className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
                   >
                     Hoàn thành
+                  </button>
+                )}
+                {order.status === OrderStatus.COMPLETED && (
+                  <button 
+                    onClick={() => handleStatusChange(order.id, OrderStatus.DELIVERED)}
+                    className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors"
+                  >
+                    Đã giao
                   </button>
                 )}
                 {(order.status === OrderStatus.PENDING || order.status === OrderStatus.IN_PROGRESS) && (
@@ -314,8 +325,15 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                    </button>
                 )}
                 <button 
+                  onClick={() => setPrintInvoice(order.id)}
+                  className="px-3 bg-gray-50 text-gray-500 rounded-lg hover:bg-gray-100 transition-colors"
+                  title="In hóa đơn"
+                >
+                  <Printer size={18} />
+                </button>
+                <button 
                   onClick={() => setDeleteConfirm(order.id)}
-                  className="px-3 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors"
+                  className="px-3 bg-gray-50 text-gray-500 rounded-lg hover:bg-gray-100 transition-colors"
                   title="Xóa đơn hàng"
                 >
                   <Trash2 size={18} />
@@ -348,7 +366,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                 <p className="text-sm text-gray-600 mb-2">Bạn có chắc muốn xóa đơn hàng:</p>
                 <p className="font-semibold text-gray-800">{order.customerName}</p>
                 <p className="text-sm text-gray-500">{order.customerPhone}</p>
-                <p className="text-sm text-rose-600 font-medium mt-2">
+                <p className="text-sm text-gray-900 font-medium mt-2">
                   Tổng: {formatCurrency(calculateOrderTotal(order.items))}
                 </p>
               </div>
@@ -381,14 +399,14 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm p-4">
             <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
               <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <DollarSign className="text-rose-500" />
+                <DollarSign className="text-gray-700" />
                 Cập Nhật Thanh Toán
               </h3>
               
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Khách hàng: <span className="font-semibold">{order.customerName}</span></p>
-                  <p className="text-sm text-gray-600">Tổng đơn: <span className="font-bold text-rose-600">{formatCurrency(calculateOrderTotal(order.items))}</span></p>
+                  <p className="text-sm text-gray-600">Tổng đơn: <span className="font-bold text-gray-900">{formatCurrency(calculateOrderTotal(order.items))}</span></p>
                 </div>
 
                 {/* Payment Method */}
@@ -400,7 +418,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                       onClick={() => setTempPayment({ ...tempPayment, method: PaymentMethod.CASH })}
                       className={`flex items-center justify-center gap-2 py-3 rounded-lg border-2 transition-all ${
                         tempPayment.method === PaymentMethod.CASH
-                          ? 'border-rose-500 bg-rose-100 text-rose-700 font-semibold'
+                          ? 'border-gray-900 bg-gray-100 text-gray-900 font-semibold'
                           : 'border-gray-200 bg-white text-gray-600'
                       }`}
                     >
@@ -412,7 +430,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                       onClick={() => setTempPayment({ ...tempPayment, method: PaymentMethod.TRANSFER })}
                       className={`flex items-center justify-center gap-2 py-3 rounded-lg border-2 transition-all ${
                         tempPayment.method === PaymentMethod.TRANSFER
-                          ? 'border-rose-500 bg-rose-100 text-rose-700 font-semibold'
+                          ? 'border-gray-900 bg-gray-100 text-gray-900 font-semibold'
                           : 'border-gray-200 bg-white text-gray-600'
                       }`}
                     >
@@ -441,7 +459,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                 </div>
 
                 {/* Summary */}
-                <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-lg p-4 border border-rose-200">
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Tổng tiền:</span>
@@ -451,7 +469,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                       <span className="text-gray-600">Đã thanh toán:</span>
                       <span className="font-bold text-green-600">{formatCurrency(tempPayment.paidAmount)}</span>
                     </div>
-                    <div className="flex justify-between pt-2 border-t border-rose-200">
+                    <div className="flex justify-between pt-2 border-t border-gray-200">
                       <span className="font-semibold">Còn lại:</span>
                       <span className={`font-bold text-lg ${
                         tempPayment.remainingAmount === 0 ? 'text-green-600' : 'text-orange-600'
@@ -467,7 +485,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
               {tempPayment.method === PaymentMethod.TRANSFER && bankSettings && tempPayment.remainingAmount > 0 && (
                 <div className="border-t border-gray-200 pt-4">
                   <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                    <CreditCard size={16} className="text-rose-500" />
+                    <CreditCard size={16} className="text-gray-700" />
                     Mã QR Chuyển Khoản
                   </h4>
                   <QRCodeDisplay
@@ -487,7 +505,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                 </button>
                 <button 
                   onClick={() => handleUpdatePayment(order.id, tempPayment)}
-                  className="flex-1 px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 font-medium shadow-md"
+                  className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-medium"
                 >
                   Lưu
                 </button>
@@ -556,10 +574,10 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                       <button
                         key={product.id}
                         onClick={() => addItemToNewOrder(product.id)}
-                        className="text-left px-3 py-2 border border-gray-200 rounded-lg hover:border-rose-300 hover:bg-rose-50 transition-all flex justify-between items-center group"
+                        className="text-left px-3 py-2 border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-all flex justify-between items-center group"
                       >
-                         <span className="text-sm font-medium text-gray-700 group-hover:text-rose-700">{product.name}</span>
-                         <Plus size={16} className="text-gray-400 group-hover:text-rose-500"/>
+                         <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">{product.name}</span>
+                         <Plus size={16} className="text-gray-400 group-hover:text-gray-600"/>
                       </button>
                     ))}
                  </div>
@@ -587,7 +605,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                       </div>
                       <div className="mt-4 pt-2 border-t border-gray-200 flex justify-between items-center">
                         <span className="font-bold text-gray-700">Tổng cộng:</span>
-                        <span className="font-bold text-rose-600 text-lg">
+                        <span className="font-bold text-gray-900 text-lg">
                           {formatCurrency(calculateOrderTotal(newOrder.items))}
                         </span>
                       </div>
@@ -598,7 +616,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                {/* Payment Section */}
                <div>
                  <label className="block text-sm font-medium text-gray-700 mb-2">Thanh toán</label>
-                 <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-100">
+                 <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                    {/* Payment Method */}
                    <div className="mb-4">
                      <label className="block text-sm font-medium text-gray-700 mb-2">Phương thức</label>
@@ -611,8 +629,8 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                          })}
                          className={`flex items-center justify-center gap-2 py-3 rounded-lg border-2 transition-all ${
                            newOrder.payment?.method === PaymentMethod.CASH
-                             ? 'border-rose-500 bg-rose-100 text-rose-700 font-semibold'
-                             : 'border-gray-200 bg-white text-gray-600 hover:border-rose-300'
+                             ? 'border-gray-900 bg-gray-100 text-gray-900 font-semibold'
+                             : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                          }`}
                        >
                          <Banknote size={18} />
@@ -626,8 +644,8 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                          })}
                          className={`flex items-center justify-center gap-2 py-3 rounded-lg border-2 transition-all ${
                            newOrder.payment?.method === PaymentMethod.TRANSFER
-                             ? 'border-rose-500 bg-rose-100 text-rose-700 font-semibold'
-                             : 'border-gray-200 bg-white text-gray-600 hover:border-rose-300'
+                             ? 'border-gray-900 bg-gray-100 text-gray-900 font-semibold'
+                             : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                          }`}
                        >
                          <CreditCard size={18} />
@@ -661,7 +679,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                      
                      {/* Remaining Amount Display */}
                      {newOrder.items && newOrder.items.length > 0 && (
-                       <div className="mt-3 p-3 bg-white rounded-lg border border-rose-200">
+                       <div className="mt-3 p-3 bg-white rounded-lg border border-gray-200">
                          <div className="flex justify-between text-sm mb-1">
                            <span className="text-gray-600">Tổng đơn hàng:</span>
                            <span className="font-bold text-gray-800">
@@ -692,7 +710,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                    {newOrder.payment?.method === PaymentMethod.TRANSFER && bankSettings && newOrder.items && newOrder.items.length > 0 && (
                      <div className="mt-4 border-t border-gray-200 pt-4">
                        <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                         <CreditCard size={16} className="text-rose-500" />
+                         <CreditCard size={16} className="text-gray-700" />
                          Mã QR Chuyển Khoản
                        </h4>
                        <QRCodeDisplay
@@ -708,13 +726,26 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
 
             <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
                <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Hủy</button>
-               <button onClick={handleCreateOrder} className="px-6 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 font-medium shadow-md shadow-rose-200">
+               <button onClick={handleCreateOrder} className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-medium">
                   Lưu Đơn Hàng
                </button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Print Invoice Modal */}
+      {printInvoice && (() => {
+        const order = orders.find(o => o.id === printInvoice);
+        if (!order) return null;
+        return (
+          <InvoicePrint
+            order={order}
+            products={products}
+            onClose={() => setPrintInvoice(null)}
+          />
+        );
+      })()}
     </div>
   );
 };

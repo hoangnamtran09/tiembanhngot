@@ -31,12 +31,14 @@ export interface Product {
   sellingPrice: number;
   recipe: RecipeItem[];
   category: string;
+  imageUrl?: string; // URL hình ảnh sản phẩm
 }
 
 export enum OrderStatus {
   PENDING = 'Chờ xử lý',
   IN_PROGRESS = 'Đang làm',
   COMPLETED = 'Hoàn thành',
+  DELIVERED = 'Đã giao',
   CANCELLED = 'Đã hủy'
 }
 
@@ -88,4 +90,50 @@ export interface BankSettings {
   template: QRTemplate;
   createdAt?: string;
   updatedAt?: string;
+}
+
+// Quản lý khách hàng
+export interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// Lịch sử mua hàng (chi phí mua nguyên liệu)
+export interface PurchaseRecord {
+  id: string;
+  ingredientId: string;
+  quantity: number; // Số lượng mua (theo buying unit)
+  price: number; // Tổng tiền mua
+  purchaseDate: string; // ISO Date
+  supplier?: string; // Nhà cung cấp
+  notes?: string;
+  createdAt: string;
+}
+
+// Chi phí khác (điện, nước, ship, dụng cụ...)
+export interface OtherExpense {
+  id: string;
+  category: string; // 'Điện', 'Nước', 'Ship', 'Dụng cụ', 'Khác'
+  amount: number;
+  description: string;
+  expenseDate: string; // ISO Date
+  createdAt: string;
+}
+
+// Xuất/Nhập kho thủ công
+export interface StockTransaction {
+  id: string;
+  ingredientId: string;
+  type: 'IN' | 'OUT'; // Nhập hoặc Xuất
+  quantity: number; // Số lượng (theo usage unit)
+  reason: string; // Lý do (VD: "Nhập hàng mới", "Điều chỉnh", "Hư hỏng")
+  notes?: string;
+  transactionDate: string; // ISO Date
+  createdAt: string;
 }
