@@ -919,6 +919,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, ingredients, 
           <InvoicePrint
             order={order}
             products={products}
+            bankSettings={bankSettings}
             onClose={() => setPrintInvoice(null)}
           />
         );
