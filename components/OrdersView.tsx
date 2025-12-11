@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Ingredient, Order, OrderStatus, Product, PaymentMethod, PaymentInfo, BankSettings } from '../types';
-import { Plus, Search, Calendar, CheckCircle, Clock, XCircle, ChevronDown, Save, Trash2, DollarSign, CreditCard, Banknote, Edit2, Printer } from 'lucide-react';
+import { Plus, Search, Calendar, CheckCircle, Clock, XCircle, ChevronDown, Save, Trash2, DollarSign, CreditCard, Banknote, Edit2, Printer, X, Check } from 'lucide-react';
 import { StorageService } from '../services/storageService';
 import { formatCurrency, formatNumber } from '../utils/format';
 import InputCurrency from './InputCurrency';
@@ -13,9 +13,10 @@ interface OrdersViewProps {
   ingredients: Ingredient[];
   setOrders: (orders: Order[]) => void;
   updateStock: (items: { productId: string; quantity: number }[]) => void;
+  onCreateOrder?: () => void;
 }
 
-const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, updateStock }) => {
+const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, ingredients, setOrders, updateStock, onCreateOrder }) => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<string | null>(null);
@@ -28,6 +29,8 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
     paidAmount: 0,
     remainingAmount: 0
   });
+  const [productSearchTerm, setProductSearchTerm] = useState('');
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
 
   // Load bank settings on mount
   useEffect(() => {
@@ -111,6 +114,8 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
         remainingAmount: 0
       }
     });
+    setProductSearchTerm('');
+    setSelectedProducts(new Set());
   };
 
   const handleUpdatePayment = (orderId: string, payment: PaymentInfo) => {
@@ -144,15 +149,49 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
     setDeleteConfirm(null);
   };
 
-  const addItemToNewOrder = (productId: string) => {
+  const updateItemQuantity = (productId: string, quantity: number) => {
+    if (quantity <= 0) {
+      removeItemFromNewOrder(productId);
+      setSelectedProducts(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(productId);
+        return newSet;
+      });
+      return;
+    }
     const currentItems = newOrder.items || [];
     const existing = currentItems.find(i => i.productId === productId);
     if (existing) {
       setNewOrder({
         ...newOrder,
-        items: currentItems.map(i => i.productId === productId ? { ...i, quantity: i.quantity + 1 } : i)
+        items: currentItems.map(i => i.productId === productId ? { ...i, quantity } : i)
       });
     } else {
+      setNewOrder({
+        ...newOrder,
+        items: [...currentItems, { productId, quantity }]
+      });
+    }
+  };
+
+  const handleToggleProduct = (productId: string) => {
+    const isSelected = selectedProducts.has(productId);
+    const currentItems = newOrder.items || [];
+    
+    if (isSelected) {
+      // Unselect - remove from order
+      setSelectedProducts(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(productId);
+        return newSet;
+      });
+      setNewOrder({
+        ...newOrder,
+        items: currentItems.filter(i => i.productId !== productId)
+      });
+    } else {
+      // Select - add to order with quantity 1
+      setSelectedProducts(prev => new Set(prev).add(productId));
       setNewOrder({
         ...newOrder,
         items: [...currentItems, { productId, quantity: 1 }]
@@ -184,7 +223,13 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Đơn Hàng</h2>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            if (onCreateOrder) {
+              onCreateOrder();
+            } else {
+              setIsModalOpen(true);
+            }
+          }}
           className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
         >
           <Plus size={20} />
@@ -569,18 +614,109 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
 
                <div>
                  <label className="block text-sm font-medium text-gray-700 mb-2">Chọn sản phẩm</label>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
-                    {products.map(product => (
-                      <button
-                        key={product.id}
-                        onClick={() => addItemToNewOrder(product.id)}
-                        className="text-left px-3 py-2 border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-all flex justify-between items-center group"
-                      >
-                         <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">{product.name}</span>
-                         <Plus size={16} className="text-gray-400 group-hover:text-gray-600"/>
-                      </button>
-                    ))}
+                 
+                 {/* Search Input */}
+                 <div className="relative mb-4">
+                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                   <input
+                     type="text"
+                     placeholder="Tìm kiếm sản phẩm..."
+                     value={productSearchTerm}
+                     onChange={(e) => setProductSearchTerm(e.target.value)}
+                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 outline-none"
+                   />
                  </div>
+
+                 {/* Product List */}
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 max-h-60 overflow-y-auto">
+                    {products
+                      .filter(product => 
+                        product.name.toLowerCase().includes(productSearchTerm.toLowerCase())
+                      )
+                      .map(product => {
+                        const isInOrder = newOrder.items?.some(i => i.productId === product.id);
+                        const isSelected = selectedProductForQuantity === product.id;
+                        
+                        return (
+                          <div key={product.id} className="relative">
+                            {isSelected ? (
+                              <div className="border-2 border-gray-900 rounded-lg p-2 bg-gray-50">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-sm font-medium text-gray-900">{product.name}</span>
+                                  <span className="text-xs text-gray-600">{formatCurrency(product.sellingPrice)}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    value={quantityInput}
+                                    onChange={(e) => setQuantityInput(e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        handleAddProductWithQuantity(product.id);
+                                      }
+                                    }}
+                                    placeholder="Số lượng"
+                                    className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-gray-900 outline-none"
+                                    autoFocus
+                                  />
+                                  <button
+                                    onClick={() => handleAddProductWithQuantity(product.id)}
+                                    className="px-3 py-1 bg-gray-900 text-white rounded text-sm hover:bg-gray-800"
+                                  >
+                                    Thêm
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setSelectedProductForQuantity(null);
+                                      setQuantityInput('');
+                                    }}
+                                    className="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded"
+                                  >
+                                    <X size={16} />
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                      <button
+                                onClick={() => {
+                                  setSelectedProductForQuantity(product.id);
+                                  setQuantityInput('1');
+                                }}
+                                className={`w-full text-left px-3 py-2 border rounded-lg transition-all flex justify-between items-center group ${
+                                  isInOrder
+                                    ? 'border-gray-300 bg-gray-100'
+                                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                }`}
+                              >
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                                      {product.name}
+                                    </span>
+                                    {isInOrder && (
+                                      <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">
+                                        Đã thêm
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-xs text-gray-500">{formatCurrency(product.sellingPrice)}</span>
+                                </div>
+                                <Plus size={16} className="text-gray-400 group-hover:text-gray-600"/>
+                      </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                 </div>
+                 
+                 {products.filter(product => 
+                   product.name.toLowerCase().includes(productSearchTerm.toLowerCase())
+                 ).length === 0 && (
+                   <div className="text-center py-4 text-gray-500 text-sm">
+                     Không tìm thấy sản phẩm
+                   </div>
+                 )}
 
                  {newOrder.items && newOrder.items.length > 0 && (
                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
@@ -590,12 +726,44 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
                            const product = products.find(p => p.id === item.productId);
                            if(!product) return null;
                            return (
-                             <div key={idx} className="flex items-center justify-between bg-white p-2 rounded shadow-sm">
-                                <span className="text-sm font-medium">{product.name}</span>
+                             <div key={idx} className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
+                                <div className="flex-1">
+                                  <span className="text-sm font-medium text-gray-900">{product.name}</span>
+                                  <p className="text-xs text-gray-500 mt-0.5">{formatCurrency(product.sellingPrice)}/sản phẩm</p>
+                                </div>
                                 <div className="flex items-center gap-3">
-                                   <span className="text-sm">x{item.quantity}</span>
-                                   <span className="text-sm font-bold text-gray-600">{formatCurrency(product.sellingPrice * item.quantity)}</span>
-                                   <button onClick={() => removeItemFromNewOrder(item.productId)} className="text-red-400 hover:text-red-600">
+                                   <div className="flex items-center gap-2">
+                                     <button
+                                       onClick={() => updateItemQuantity(item.productId, item.quantity - 1)}
+                                       className="w-7 h-7 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 text-gray-600"
+                                     >
+                                       -
+                                     </button>
+                                     <input
+                                       type="number"
+                                       min="1"
+                                       value={item.quantity}
+                                       onChange={(e) => {
+                                         const qty = parseInt(e.target.value) || 1;
+                                         updateItemQuantity(item.productId, qty);
+                                       }}
+                                       className="w-16 px-2 py-1 text-center border border-gray-300 rounded text-sm focus:ring-2 focus:ring-gray-900 outline-none"
+                                     />
+                                     <button
+                                       onClick={() => updateItemQuantity(item.productId, item.quantity + 1)}
+                                       className="w-7 h-7 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 text-gray-600"
+                                     >
+                                       +
+                                     </button>
+                                   </div>
+                                   <span className="text-sm font-bold text-gray-900 w-24 text-right">
+                                     {formatCurrency(product.sellingPrice * item.quantity)}
+                                   </span>
+                                   <button 
+                                     onClick={() => removeItemFromNewOrder(item.productId)} 
+                                     className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                                     title="Xóa"
+                                   >
                                       <Trash2 size={16} />
                                    </button>
                                 </div>
@@ -725,7 +893,16 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, setOrders, up
             </div>
 
             <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
-               <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Hủy</button>
+               <button 
+                 onClick={() => {
+                   setIsModalOpen(false);
+                   setProductSearchTerm('');
+                   setSelectedProducts(new Set());
+                 }} 
+                 className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+               >
+                 Hủy
+               </button>
                <button onClick={handleCreateOrder} className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-medium">
                   Lưu Đơn Hàng
                </button>

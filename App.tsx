@@ -6,18 +6,19 @@ import RecipeView from './components/RecipeView';
 import OrdersView from './components/OrdersView';
 import AssistantView from './components/AssistantView';
 import BankSettingsView from './components/BankSettingsView';
-import PurchasePreparationView from './components/PurchasePreparationView';
 import RevenueReportView from './components/RevenueReportView';
 import CustomerView from './components/CustomerView';
 import StockTransactionView from './components/StockTransactionView';
 import PurchaseRecordView from './components/PurchaseRecordView';
-import OtherExpenseView from './components/OtherExpenseView';
+import CashFlowView from './components/CashFlowView';
+import CreateOrderView from './components/CreateOrderView';
 import { StorageService } from './services/storageService';
 import { Ingredient, Order, Product } from './types';
 import { Menu } from 'lucide-react';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -123,13 +124,31 @@ const App: React.FC = () => {
       );
     }
 
+    if (isCreatingOrder) {
+      return (
+        <CreateOrderView
+          products={products}
+          orders={orders}
+          setOrders={setOrders}
+          onBack={() => setIsCreatingOrder(false)}
+        />
+      );
+    }
+
     switch (activeTab) {
       case 'dashboard':
         return <Dashboard orders={orders} products={products} ingredients={ingredients} />;
       case 'orders':
-        return <OrdersView orders={orders} products={products} ingredients={ingredients} setOrders={setOrders} updateStock={handleDeductInventory} />;
-      case 'purchase':
-        return <PurchasePreparationView orders={orders} products={products} ingredients={ingredients} />;
+        return (
+          <OrdersView 
+            orders={orders} 
+            products={products} 
+            ingredients={ingredients} 
+            setOrders={setOrders} 
+            updateStock={handleDeductInventory} 
+            onCreateOrder={() => setIsCreatingOrder(true)} 
+          />
+        );
       case 'inventory':
         return <InventoryView ingredients={ingredients} setIngredients={setIngredients} />;
       case 'recipes':
@@ -146,8 +165,8 @@ const App: React.FC = () => {
         return <StockTransactionView ingredients={ingredients} setIngredients={setIngredients} />;
       case 'purchase-records':
         return <PurchaseRecordView ingredients={ingredients} setIngredients={setIngredients} />;
-      case 'other-expenses':
-        return <OtherExpenseView />;
+      case 'cash-flow':
+        return <CashFlowView orders={orders} products={products} />;
       default:
         return <Dashboard orders={orders} products={products} ingredients={ingredients} />;
     }
@@ -178,12 +197,11 @@ const App: React.FC = () => {
                  { id: 'dashboard', label: 'Tổng Quan' },
                  { id: 'orders', label: 'Đơn Hàng' },
                  { id: 'customers', label: 'Khách Hàng' },
-                 { id: 'purchase', label: 'Chuẩn Bị Nguyên Liệu' },
                  { id: 'inventory', label: 'Kho Nguyên Liệu' },
                  { id: 'stock-transactions', label: 'Xuất/Nhập Kho' },
                  { id: 'recipes', label: 'Công Thức' },
                  { id: 'purchase-records', label: 'Lịch Sử Mua Hàng' },
-                 { id: 'other-expenses', label: 'Chi Phí Khác' },
+                 { id: 'cash-flow', label: 'Quản Lý Dòng Tiền' },
                  { id: 'revenue', label: 'Báo Cáo Doanh Thu' },
                  { id: 'assistant', label: 'Trợ Lý AI' },
                  { id: 'settings', label: 'Cài Đặt Ngân Hàng' }
@@ -201,11 +219,11 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Desktop Sidebar */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      {/* Desktop Sidebar - Hide when creating order */}
+      {!isCreatingOrder && <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />}
 
       {/* Main Content */}
-      <main className="flex-1 md:ml-64 pt-16 md:pt-0 overflow-y-auto h-screen">
+      <main className={`flex-1 ${!isCreatingOrder ? 'md:ml-64' : ''} pt-16 md:pt-0 overflow-y-auto h-screen`}>
         {renderContent()}
       </main>
     </div>

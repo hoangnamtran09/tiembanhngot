@@ -66,6 +66,14 @@ npm run dev
 
 ## 📖 Hướng Dẫn Chi Tiết
 
+### Hướng Dẫn Sử Dụng
+Xem file [HUONG_DAN_SU_DUNG.md](./HUONG_DAN_SU_DUNG.md) để có hướng dẫn chi tiết về:
+- Cách sử dụng tất cả các tính năng
+- Quản lý nguyên liệu, sản phẩm, đơn hàng
+- Quản lý khách hàng và dòng tiền
+- Báo cáo và thống kê
+
+### Hướng Dẫn Setup
 Xem file [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) để có hướng dẫn chi tiết về:
 - Setup Supabase từng bước
 - Cấu trúc database
