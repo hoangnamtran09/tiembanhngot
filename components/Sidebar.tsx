@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, ShoppingBag, Package, BookOpen, Sparkles, ChefHat, Settings, ShoppingCart, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Package, BookOpen, Sparkles, ChefHat, Settings, ShoppingCart, TrendingUp, Users, ArrowDownUp, Receipt, DollarSign } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -10,9 +10,13 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Tổng Quan', icon: <LayoutDashboard size={20} /> },
     { id: 'orders', label: 'Đơn Hàng', icon: <ShoppingBag size={20} /> },
+    { id: 'customers', label: 'Khách Hàng', icon: <Users size={20} /> },
     { id: 'purchase', label: 'Chuẩn Bị Nguyên Liệu', icon: <ShoppingCart size={20} /> },
     { id: 'inventory', label: 'Kho Nguyên Liệu', icon: <Package size={20} /> },
-    { id: 'recipes', label: 'Công Thức & Cost', icon: <BookOpen size={20} /> },
+    { id: 'stock-transactions', label: 'Xuất/Nhập Kho', icon: <ArrowDownUp size={20} /> },
+    { id: 'recipes', label: 'Công Thức', icon: <BookOpen size={20} /> },
+    { id: 'purchase-records', label: 'Lịch Sử Mua Hàng', icon: <Receipt size={20} /> },
+    { id: 'other-expenses', label: 'Chi Phí Khác', icon: <DollarSign size={20} /> },
     { id: 'revenue', label: 'Báo Cáo Doanh Thu', icon: <TrendingUp size={20} /> },
     { id: 'assistant', label: 'Trợ Lý AI', icon: <Sparkles size={20} /> },
     { id: 'settings', label: 'Cài Đặt Ngân Hàng', icon: <Settings size={20} /> },

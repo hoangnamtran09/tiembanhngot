@@ -5,7 +5,7 @@ import {
   LineChart, Line, Legend
 } from 'recharts';
 import { TrendingUp, DollarSign, Calendar, Filter } from 'lucide-react';
-import { formatCurrency, formatPercentage } from '../utils/format';
+import { formatCurrency, formatPercentage, formatQuantity } from '../utils/format';
 import { getUnitConversionFactor } from '../utils/unitConverter';
 
 interface RevenueReportViewProps {
@@ -174,12 +174,59 @@ const RevenueReportView: React.FC<RevenueReportViewProps> = ({
       .slice(0, 5);
   }, [filteredOrders, products]);
 
+  // Ingredient consumption report
+  const ingredientConsumption = useMemo(() => {
+    const consumptionMap = new Map<string, { 
+      name: string; 
+      unit: string; 
+      usageUnit: string;
+      totalUsed: number;
+      cost: number;
+    }>();
+
+    filteredOrders.forEach(order => {
+      order.items.forEach(item => {
+        const product = products.find(p => p.id === item.productId);
+        if (product) {
+          product.recipe.forEach(recipeItem => {
+            const ingredient = ingredients.find(i => i.id === recipeItem.ingredientId);
+            if (ingredient) {
+              const existing = consumptionMap.get(ingredient.id) || {
+                name: ingredient.name,
+                unit: ingredient.unit,
+                usageUnit: ingredient.usageUnit || ingredient.unit,
+                totalUsed: 0,
+                cost: 0
+              };
+
+              const usageUnit = ingredient.usageUnit || ingredient.unit;
+              const conversionFactor = getUnitConversionFactor(ingredient.unit, usageUnit);
+              const costPerUsageUnit = ingredient.buyingQuantity > 0
+                ? (ingredient.price / ingredient.buyingQuantity) / conversionFactor
+                : 0;
+
+              consumptionMap.set(ingredient.id, {
+                ...existing,
+                totalUsed: existing.totalUsed + (recipeItem.quantity * item.quantity),
+                cost: existing.cost + (costPerUsageUnit * recipeItem.quantity * item.quantity)
+              });
+            }
+          });
+        }
+      });
+    });
+
+    return Array.from(consumptionMap.values())
+      .sort((a, b) => b.totalUsed - a.totalUsed)
+      .slice(0, 10);
+  }, [filteredOrders, products, ingredients]);
+
   return (
     <div className="p-6 max-w-7xl mx-auto pb-20 md:pb-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <TrendingUp className="text-rose-500" />
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <TrendingUp className="text-gray-700" />
             Báo Cáo Doanh Thu & Lợi Nhuận
           </h2>
           <p className="text-gray-500 mt-1">Phân tích hiệu quả kinh doanh</p>
@@ -193,7 +240,7 @@ const RevenueReportView: React.FC<RevenueReportViewProps> = ({
               onClick={() => setTimeRange(range)}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 timeRange === range
-                  ? 'bg-rose-500 text-white'
+                  ? 'bg-gray-900 text-white'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
@@ -273,7 +320,7 @@ const RevenueReportView: React.FC<RevenueReportViewProps> = ({
               <Tooltip 
                 formatter={(value: number) => formatCurrency(value)}
               />
-              <Bar dataKey="revenue" fill="#f43f5e" />
+              <Bar dataKey="revenue" fill="#1f2937" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -290,9 +337,9 @@ const RevenueReportView: React.FC<RevenueReportViewProps> = ({
                 formatter={(value: number) => formatCurrency(value)}
               />
               <Legend />
-              <Line type="monotone" dataKey="revenue" stroke="#f43f5e" name="Doanh thu" />
-              <Line type="monotone" dataKey="cost" stroke="#ef4444" name="Chi phí" />
-              <Line type="monotone" dataKey="profit" stroke="#22c55e" name="Lợi nhuận" />
+              <Line type="monotone" dataKey="revenue" stroke="#1f2937" name="Doanh thu" />
+              <Line type="monotone" dataKey="cost" stroke="#6b7280" name="Chi phí" />
+              <Line type="monotone" dataKey="profit" stroke="#10b981" name="Lợi nhuận" />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -309,20 +356,20 @@ const RevenueReportView: React.FC<RevenueReportViewProps> = ({
                 : 0;
               return (
                 <div key={index} className="flex items-center gap-4">
-                  <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 font-bold text-sm">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-bold text-sm">
                     {index + 1}
                   </div>
                   <div className="flex-1">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="font-medium text-gray-800">{product.name}</span>
-                      <span className="text-sm font-bold text-rose-600">
+                      <span className="font-medium text-gray-900">{product.name}</span>
+                      <span className="text-sm font-bold text-gray-900">
                         {formatCurrency(product.revenue)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="flex-1 bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-rose-500 h-2 rounded-full"
+                          className="bg-gray-900 h-2 rounded-full"
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
@@ -342,6 +389,43 @@ const RevenueReportView: React.FC<RevenueReportViewProps> = ({
               Chưa có dữ liệu bán hàng
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Ingredient Consumption Report */}
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mt-6">
+        <h3 className="text-lg font-bold text-gray-900 mb-4">Mức Tiêu Hao Nguyên Vật Liệu</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Nguyên liệu</th>
+                <th className="px-4 py-3 text-right text-sm font-semibold text-gray-900">Số lượng đã dùng</th>
+                <th className="px-4 py-3 text-right text-sm font-semibold text-gray-900">Chi phí</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {ingredientConsumption.length > 0 ? (
+                ingredientConsumption.map((item, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.name}</td>
+                    <td className="px-4 py-3 text-right text-sm text-gray-700">
+                      {formatQuantity(item.totalUsed, item.usageUnit)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
+                      {formatCurrency(item.cost)}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={3} className="px-4 py-8 text-center text-gray-400">
+                    Chưa có dữ liệu tiêu hao
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

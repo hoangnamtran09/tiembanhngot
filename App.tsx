@@ -8,6 +8,10 @@ import AssistantView from './components/AssistantView';
 import BankSettingsView from './components/BankSettingsView';
 import PurchasePreparationView from './components/PurchasePreparationView';
 import RevenueReportView from './components/RevenueReportView';
+import CustomerView from './components/CustomerView';
+import StockTransactionView from './components/StockTransactionView';
+import PurchaseRecordView from './components/PurchaseRecordView';
+import OtherExpenseView from './components/OtherExpenseView';
 import { StorageService } from './services/storageService';
 import { Ingredient, Order, Product } from './types';
 import { Menu } from 'lucide-react';
@@ -136,6 +140,14 @@ const App: React.FC = () => {
         return <AssistantView ingredients={ingredients} products={products} />;
       case 'settings':
         return <BankSettingsView />;
+      case 'customers':
+        return <CustomerView orders={orders} products={products} />;
+      case 'stock-transactions':
+        return <StockTransactionView ingredients={ingredients} setIngredients={setIngredients} />;
+      case 'purchase-records':
+        return <PurchaseRecordView ingredients={ingredients} setIngredients={setIngredients} />;
+      case 'other-expenses':
+        return <OtherExpenseView />;
       default:
         return <Dashboard orders={orders} products={products} ingredients={ingredients} />;
     }
@@ -165,9 +177,13 @@ const App: React.FC = () => {
                {[
                  { id: 'dashboard', label: 'Tổng Quan' },
                  { id: 'orders', label: 'Đơn Hàng' },
+                 { id: 'customers', label: 'Khách Hàng' },
                  { id: 'purchase', label: 'Chuẩn Bị Nguyên Liệu' },
                  { id: 'inventory', label: 'Kho Nguyên Liệu' },
+                 { id: 'stock-transactions', label: 'Xuất/Nhập Kho' },
                  { id: 'recipes', label: 'Công Thức' },
+                 { id: 'purchase-records', label: 'Lịch Sử Mua Hàng' },
+                 { id: 'other-expenses', label: 'Chi Phí Khác' },
                  { id: 'revenue', label: 'Báo Cáo Doanh Thu' },
                  { id: 'assistant', label: 'Trợ Lý AI' },
                  { id: 'settings', label: 'Cài Đặt Ngân Hàng' }
