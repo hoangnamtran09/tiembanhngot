@@ -29,6 +29,7 @@ Hệ thống quản lý tiệm bánh giúp bạn:
 - Quản lý đơn hàng và khách hàng
 - Theo dõi doanh thu và lợi nhuận
 - Quản lý dòng tiền và chi phí
+
 ---
 
 ## 📦 Quản Lý Nguyên Liệu

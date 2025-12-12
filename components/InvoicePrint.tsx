@@ -1,16 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Order, Product, BankSettings, PaymentMethod } from '../types';
 import { formatCurrency } from '../utils/format';
 import { Printer, X } from 'lucide-react';
+import { StorageService } from '../services/storageService';
 
 interface InvoicePrintProps {
   order: Order;
   products: Product[];
-  bankSettings?: BankSettings | null;
   onClose: () => void;
 }
 
-const InvoicePrint: React.FC<InvoicePrintProps> = ({ order, products, bankSettings, onClose }) => {
+const InvoicePrint: React.FC<InvoicePrintProps> = ({ order, products, onClose }) => {
+  const [bankSettings, setBankSettings] = useState<BankSettings | null>(null);
+
+  useEffect(() => {
+    const loadBankSettings = async () => {
+      const settings = await StorageService.getBankSettings();
+      setBankSettings(settings);
+    };
+    loadBankSettings();
+  }, []);
+
   const calculateTotal = () => {
     return order.items.reduce((total, item) => {
       const product = products.find(p => p.id === item.productId);
@@ -20,6 +30,25 @@ const InvoicePrint: React.FC<InvoicePrintProps> = ({ order, products, bankSettin
 
   const handlePrint = () => {
     window.print();
+  };
+
+  // Tính số tiền còn lại cần thanh toán
+  const getRemainingAmount = () => {
+    const total = calculateTotal();
+    if (order.payment) {
+      return order.payment.remainingAmount || (total - (order.payment.paidAmount || 0));
+    }
+    return total;
+  };
+
+  // Tạo URL QR code với template qr_only (chỉ có QR code)
+  const getQRCodeUrl = () => {
+    if (!bankSettings) return null;
+    const remainingAmount = getRemainingAmount();
+    if (remainingAmount <= 0) return null;
+    
+    const description = `DH ${order.customerName || 'Khach hang'}`;
+    return `https://img.vietqr.io/image/${bankSettings.bankId}-${bankSettings.accountNumber}-qr_only.png?amount=${remainingAmount}&addInfo=${encodeURIComponent(description)}&accountName=${encodeURIComponent(bankSettings.accountName)}`;
   };
 
   return (
@@ -72,129 +101,132 @@ const InvoicePrint: React.FC<InvoicePrintProps> = ({ order, products, bankSettin
           <div className="invoice-content p-4">
             {/* Header */}
             <div className="text-center mb-3">
-              <h1 className="text-xl font-bold text-gray-900 mb-0.5">TIỆM BÁNH NGỌT</h1>
-              <p className="text-xs text-gray-600">Hóa đơn bán hàng</p>
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">TIỆM BÁNH NGỌT</h1>
+              <p className="text-sm text-gray-600">Hóa đơn bán hàng</p>
             </div>
 
-            {/* Order Info */}
-            <div className="mb-3 space-y-0.5 text-xs">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Mã đơn:</span>
-                <span className="font-semibold text-gray-900">#{order.id.slice(-8)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Ngày:</span>
-                <span className="text-gray-900">{new Date(order.createdAt).toLocaleDateString('vi-VN')}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Khách hàng:</span>
-                <span className="font-semibold text-gray-900">{order.customerName}</span>
-              </div>
-              {order.customerPhone && (
+            {/* Main Content */}
+            <div className="space-y-3 mb-3">
+              {/* Order Info */}
+              <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">SĐT:</span>
-                  <span className="text-gray-900">{order.customerPhone}</span>
+                  <span className="text-gray-600">Mã đơn:</span>
+                  <span className="font-semibold text-gray-900">#{order.id.slice(-8)}</span>
                 </div>
-              )}
-              {order.deadline && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Ngày giao:</span>
-                  <span className="text-gray-900">{new Date(order.deadline).toLocaleDateString('vi-VN')}</span>
+                  <span className="text-gray-600">Ngày:</span>
+                  <span className="text-gray-900">{new Date(order.createdAt).toLocaleDateString('vi-VN')}</span>
                 </div>
-              )}
-            </div>
-
-            {/* Items */}
-            <div className="border-t border-b border-gray-300 py-1.5 mb-2">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-gray-300">
-                    <th className="text-left py-1 text-gray-700 font-semibold">Sản phẩm</th>
-                    <th className="text-center py-1 text-gray-700 font-semibold">SL</th>
-                    <th className="text-right py-1 text-gray-700 font-semibold">Đơn giá</th>
-                    <th className="text-right py-1 text-gray-700 font-semibold">Thành tiền</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {order.items.map((item, idx) => {
-                    const product = products.find(p => p.id === item.productId);
-                    if (!product) return null;
-                    return (
-                      <tr key={idx} className="border-b border-gray-200">
-                        <td className="py-1 text-gray-900">{product.name}</td>
-                        <td className="text-center py-1 text-gray-700">{item.quantity}</td>
-                        <td className="text-right py-1 text-gray-700">{formatCurrency(product.sellingPrice)}</td>
-                        <td className="text-right py-1 text-gray-900 font-semibold">
-                          {formatCurrency(product.sellingPrice * item.quantity)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Notes */}
-            {order.notes && (
-              <div className="mb-2">
-                <p className="text-xs text-gray-600 mb-0.5">Ghi chú:</p>
-                <p className="text-xs text-gray-900 italic">{order.notes}</p>
-              </div>
-            )}
-
-            {/* Payment Info */}
-            {order.payment && (
-              <div className="mb-2 space-y-0.5 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Phương thức:</span>
-                  <span className="text-gray-900">{order.payment.method}</span>
+                  <span className="text-gray-600">Khách hàng:</span>
+                  <span className="font-semibold text-gray-900">{order.customerName}</span>
                 </div>
-                {order.payment.paidAmount > 0 && (
+                {order.customerPhone && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Đã thanh toán:</span>
-                    <span className="text-gray-900">{formatCurrency(order.payment.paidAmount)}</span>
+                    <span className="text-gray-600">SĐT:</span>
+                    <span className="text-gray-900">{order.customerPhone}</span>
                   </div>
                 )}
-                {order.payment.remainingAmount > 0 && (
+                {order.deadline && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Còn lại:</span>
-                    <span className="text-gray-900">{formatCurrency(order.payment.remainingAmount)}</span>
+                    <span className="text-gray-600">Ngày giao:</span>
+                    <span className="text-gray-900">{new Date(order.deadline).toLocaleDateString('vi-VN')}</span>
                   </div>
                 )}
               </div>
-            )}
 
-            {/* QR Code for Payment */}
-            {order.payment && 
-             order.payment.remainingAmount > 0 && 
-             order.payment.method === PaymentMethod.TRANSFER && 
-             bankSettings && (
-              <div className="mb-2 border-t border-gray-300 pt-2">
-                <p className="text-xs font-semibold text-gray-700 mb-1.5 text-center">
-                  Quét mã QR để thanh toán
-                </p>
-                <div className="flex justify-center">
-                  <div className="bg-white p-1.5 rounded border border-gray-300">
+              {/* Items */}
+              <div className="border-t border-b border-gray-300 py-2">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-300">
+                      <th className="text-left py-1 text-gray-700 font-semibold text-xs">Sản phẩm</th>
+                      <th className="text-center py-1 text-gray-700 font-semibold text-xs">SL</th>
+                      <th className="text-right py-1 text-gray-700 font-semibold text-xs">Đơn giá</th>
+                      <th className="text-right py-1 text-gray-700 font-semibold text-xs">Thành tiền</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {order.items.map((item, idx) => {
+                      const product = products.find(p => p.id === item.productId);
+                      if (!product) return null;
+                      return (
+                        <tr key={idx} className="border-b border-gray-200">
+                          <td className="py-1 text-gray-900 text-xs">{product.name}</td>
+                          <td className="text-center py-1 text-gray-700 text-xs">{item.quantity}</td>
+                          <td className="text-right py-1 text-gray-700 text-xs">{formatCurrency(product.sellingPrice)}</td>
+                          <td className="text-right py-1 text-gray-900 font-semibold text-xs">
+                            {formatCurrency(product.sellingPrice * item.quantity)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Notes */}
+              {order.notes && (
+                <div className="text-xs">
+                  <p className="text-gray-600 mb-0.5">Ghi chú:</p>
+                  <p className="text-gray-900 italic">{order.notes}</p>
+                </div>
+              )}
+
+              {/* Payment Info */}
+              {order.payment && (
+                <div className="space-y-0.5 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Phương thức:</span>
+                    <span className="text-gray-900">{order.payment.method}</span>
+                  </div>
+                  {order.payment.paidAmount > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Đã thanh toán:</span>
+                      <span className="text-gray-900">{formatCurrency(order.payment.paidAmount)}</span>
+                    </div>
+                  )}
+                  {order.payment.remainingAmount > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Còn lại:</span>
+                      <span className="text-gray-900">{formatCurrency(order.payment.remainingAmount)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Total */}
+              <div className="border-t-2 border-gray-900 pt-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-bold text-gray-900">TỔNG CỘNG:</span>
+                  <span className="text-xl font-bold text-gray-900">{formatCurrency(calculateTotal())}</span>
+                </div>
+              </div>
+
+              {/* QR Code - Chính giữa */}
+              {order.payment?.method === PaymentMethod.TRANSFER && bankSettings && getRemainingAmount() > 0 && getQRCodeUrl() && (
+                <div className="flex flex-col items-center justify-center my-3">
+                  <div className="bg-white p-3 rounded-lg border-2 border-gray-300" style={{ width: '200px', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <img 
-                      src={`https://img.vietqr.io/image/${bankSettings.bankId}-${bankSettings.accountNumber}-${bankSettings.template}.png?amount=${order.payment.remainingAmount}&addInfo=${encodeURIComponent(`Thanh toan don hang #${order.id.slice(-8)}`)}&accountName=${encodeURIComponent(bankSettings.accountName)}`}
-                      alt="QR Code thanh toán"
-                      className="w-40 h-40"
+                      src={getQRCodeUrl() || ''} 
+                      alt="QR Code thanh toán" 
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
+                        if (parent) {
+                          parent.innerHTML = '<div class="text-center text-red-500 p-2 text-xs"><p>Không thể tải QR</p></div>';
+                        }
+                      }}
                     />
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* Total */}
-            <div className="border-t-2 border-gray-900 pt-2">
-              <div className="flex justify-between items-center">
-                <span className="text-base font-bold text-gray-900">TỔNG CỘNG:</span>
-                <span className="text-lg font-bold text-gray-900">{formatCurrency(calculateTotal())}</span>
-              </div>
+              )}
             </div>
 
             {/* Footer */}
-            <div className="mt-3 text-center text-xs text-gray-600">
+            <div className="mt-2 text-center text-xs text-gray-600">
               <p>Cảm ơn quý khách đã sử dụng dịch vụ!</p>
               <p className="mt-0.5">Hẹn gặp lại quý khách lần sau</p>
             </div>
@@ -206,4 +238,3 @@ const InvoicePrint: React.FC<InvoicePrintProps> = ({ order, products, bankSettin
 };
 
 export default InvoicePrint;
-
