@@ -17,8 +17,10 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ orders, products, ingredients }) => {
   // --- Calculation Logic ---
   
-  // 1. Calculate Revenue, Cost, Profit from COMPLETED orders only
-  const completedOrders = orders.filter(o => o.status === OrderStatus.COMPLETED);
+  // 1. Calculate Revenue, Cost, Profit from COMPLETED and DELIVERED orders
+  const completedOrders = orders.filter(o => 
+    o.status === OrderStatus.COMPLETED || o.status === OrderStatus.DELIVERED
+  );
   
   let totalRevenue = 0;
   let totalCost = 0;

@@ -23,9 +23,11 @@ const RevenueReportView: React.FC<RevenueReportViewProps> = ({
 }) => {
   const [timeRange, setTimeRange] = useState<TimeRange>('month');
 
-  // Filter completed orders by time range
+  // Filter completed and delivered orders by time range
   const filteredOrders = useMemo(() => {
-    const completed = orders.filter(o => o.status === OrderStatus.COMPLETED);
+    const completed = orders.filter(o => 
+      o.status === OrderStatus.COMPLETED || o.status === OrderStatus.DELIVERED
+    );
     
     if (timeRange === 'all') return completed;
 

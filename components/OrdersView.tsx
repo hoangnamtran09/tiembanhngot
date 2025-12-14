@@ -19,6 +19,7 @@ interface OrdersViewProps {
 const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, ingredients, setOrders, updateStock, onCreateOrder }) => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
   const [editingPayment, setEditingPayment] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [printInvoice, setPrintInvoice] = useState<string | null>(null);
@@ -84,21 +85,45 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, ingredients, 
     const totalAmount = calculateOrderTotal(newOrder.items);
     const paidAmount = newOrder.payment?.paidAmount || 0;
     
-    const fullOrder: Order = {
-      ...newOrder as Order,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      status: OrderStatus.PENDING,
-      deadline: newOrder.deadline || new Date(Date.now() + 86400000).toISOString(), // Default 1 day
-      payment: {
-        method: newOrder.payment?.method || PaymentMethod.CASH,
-        totalAmount: totalAmount,
-        paidAmount: paidAmount,
-        remainingAmount: totalAmount - paidAmount
-      }
-    };
+    if (editingOrderId) {
+      // Update existing order
+      const existingOrder = orders.find(o => o.id === editingOrderId);
+      const updatedOrder: Order = {
+        ...newOrder as Order,
+        id: editingOrderId,
+        createdAt: existingOrder?.createdAt || new Date().toISOString(),
+        status: existingOrder?.status || OrderStatus.PENDING,
+        deadline: newOrder.deadline || existingOrder?.deadline || new Date(Date.now() + 86400000).toISOString(),
+        payment: {
+          method: newOrder.payment?.method || PaymentMethod.CASH,
+          totalAmount: totalAmount,
+          paidAmount: paidAmount,
+          remainingAmount: totalAmount - paidAmount
+        }
+      };
+      
+      const updated = orders.map(o => o.id === editingOrderId ? updatedOrder : o);
+      setOrders(updated);
+      setEditingOrderId(null);
+    } else {
+      // Create new order
+      const fullOrder: Order = {
+        ...newOrder as Order,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString(),
+        status: OrderStatus.PENDING,
+        deadline: newOrder.deadline || new Date(Date.now() + 86400000).toISOString(), // Default 1 day
+        payment: {
+          method: newOrder.payment?.method || PaymentMethod.CASH,
+          totalAmount: totalAmount,
+          paidAmount: paidAmount,
+          remainingAmount: totalAmount - paidAmount
+        }
+      };
+      
+      setOrders([fullOrder, ...orders]);
+    }
     
-    setOrders([fullOrder, ...orders]);
     setIsModalOpen(false);
     setNewOrder({ 
       customerName: '', 
@@ -116,6 +141,29 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, ingredients, 
     });
     setProductSearchTerm('');
     setSelectedProducts(new Set());
+  };
+
+  const openEditOrder = (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    setEditingOrderId(orderId);
+    setNewOrder({
+      customerName: order.customerName,
+      customerPhone: order.customerPhone,
+      deadline: order.deadline,
+      items: order.items,
+      status: order.status,
+      notes: order.notes || '',
+      payment: order.payment || {
+        method: PaymentMethod.CASH,
+        totalAmount: calculateOrderTotal(order.items),
+        paidAmount: 0,
+        remainingAmount: calculateOrderTotal(order.items)
+      }
+    });
+    setSelectedProducts(new Set(order.items.map(item => item.productId)));
+    setIsModalOpen(true);
   };
 
   const handleUpdatePayment = (orderId: string, payment: PaymentInfo) => {
@@ -269,15 +317,29 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, ingredients, 
             </div>
 
             <div className="flex-1 space-y-2 mb-4">
-              {order.items.map((item, idx) => {
-                const product = products.find(p => p.id === item.productId);
-                return (
-                  <div key={idx} className="flex justify-between text-sm text-gray-600 border-b border-dashed border-gray-100 pb-1 last:border-0">
-                    <span>{item.quantity}x {product?.name || 'Unknown'}</span>
-                    <span className="font-medium">{formatCurrency(product ? product.sellingPrice * item.quantity : 0)}</span>
+              {/* Danh sách sản phẩm */}
+              {order.items && order.items.length > 0 ? (
+                <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                  <p className="text-xs font-semibold text-gray-700 mb-2 uppercase">Sản phẩm:</p>
+                  <div className="space-y-2">
+                    {order.items.map((item, idx) => {
+                      const product = products.find(p => p.id === item.productId);
+                      return (
+                        <div key={idx} className="flex justify-between items-center text-sm bg-white rounded px-2 py-1.5 border border-gray-200">
+                          <span className="text-gray-800 font-medium">
+                            {item.quantity}x <span className="font-semibold text-gray-900">{product?.name || 'Unknown'}</span>
+                          </span>
+                          <span className="font-bold text-gray-900">{formatCurrency(product ? product.sellingPrice * item.quantity : 0)}</span>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
+                </div>
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-center">
+                  <p className="text-xs text-yellow-700">Chưa có sản phẩm trong đơn hàng</p>
+                </div>
+              )}
               {order.notes && (
                 <div className="mt-3 pt-2 border-t border-gray-200">
                   <p className="text-xs text-gray-500 mb-1 font-medium">Ghi chú:</p>
@@ -369,6 +431,13 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, ingredients, 
                      <XCircle size={18} />
                    </button>
                 )}
+                <button 
+                  onClick={() => openEditOrder(order.id)}
+                  className="px-3 bg-gray-50 text-gray-500 rounded-lg hover:bg-gray-100 transition-colors"
+                  title="Chỉnh sửa đơn hàng"
+                >
+                  <Edit2 size={18} />
+                </button>
                 <button 
                   onClick={() => setPrintInvoice(order.id)}
                   className="px-3 bg-gray-50 text-gray-500 rounded-lg hover:bg-gray-100 transition-colors"
@@ -564,7 +633,9 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, ingredients, 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl w-full max-w-2xl p-4 sm:p-6 shadow-xl h-full max-h-[90vh] flex flex-col">
-            <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4">Tạo Đơn Hàng Mới</h3>
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4">
+              {editingOrderId ? 'Chỉnh Sửa Đơn Hàng' : 'Tạo Đơn Hàng Mới'}
+            </h3>
             
             <div className="flex-1 overflow-y-auto space-y-4 sm:space-y-6 pr-2">
                <div className="grid grid-cols-2 gap-4">
@@ -635,11 +706,11 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, ingredients, 
                       )
                       .map(product => {
                         const isInOrder = newOrder.items?.some(i => i.productId === product.id);
-                        const isSelected = selectedProductForQuantity === product.id;
+                        const orderItem = newOrder.items?.find(i => i.productId === product.id);
                         
                         return (
                           <div key={product.id} className="relative">
-                            {isSelected ? (
+                            {isInOrder && orderItem ? (
                               <div className="border-2 border-gray-900 rounded-lg p-2 bg-gray-50">
                                 <div className="flex items-center justify-between mb-2">
                                   <span className="text-sm font-medium text-gray-900">{product.name}</span>
@@ -649,27 +720,19 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, ingredients, 
                                   <input
                                     type="number"
                                     min="1"
-                                    value={quantityInput}
-                                    onChange={(e) => setQuantityInput(e.target.value)}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        handleAddProductWithQuantity(product.id);
-                                      }
-                                    }}
+                                    value={orderItem.quantity}
+                                    onChange={(e) => updateItemQuantity(product.id, parseInt(e.target.value) || 0)}
                                     placeholder="Số lượng"
                                     className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-gray-900 outline-none"
-                                    autoFocus
                                   />
                                   <button
-                                    onClick={() => handleAddProductWithQuantity(product.id)}
-                                    className="px-3 py-1 bg-gray-900 text-white rounded text-sm hover:bg-gray-800"
-                                  >
-                                    Thêm
-                                  </button>
-                                  <button
                                     onClick={() => {
-                                      setSelectedProductForQuantity(null);
-                                      setQuantityInput('');
+                                      removeItemFromNewOrder(product.id);
+                                      setSelectedProducts(prev => {
+                                        const newSet = new Set(prev);
+                                        newSet.delete(product.id);
+                                        return newSet;
+                                      });
                                     }}
                                     className="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded"
                                   >
@@ -679,10 +742,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, ingredients, 
                               </div>
                             ) : (
                       <button
-                                onClick={() => {
-                                  setSelectedProductForQuantity(product.id);
-                                  setQuantityInput('1');
-                                }}
+                                onClick={() => handleToggleProduct(product.id)}
                                 className={`w-full text-left px-3 py-2 border rounded-lg transition-all flex justify-between items-center group ${
                                   isInOrder
                                     ? 'border-gray-300 bg-gray-100'
@@ -904,7 +964,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({ orders, products, ingredients, 
                  Hủy
                </button>
                <button onClick={handleCreateOrder} className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-medium">
-                  Lưu Đơn Hàng
+                  {editingOrderId ? 'Cập Nhật Đơn Hàng' : 'Lưu Đơn Hàng'}
                </button>
             </div>
           </div>

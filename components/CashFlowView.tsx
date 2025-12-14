@@ -21,9 +21,11 @@ const CashFlowView: React.FC<CashFlowViewProps> = ({ orders, products }) => {
     setPurchaseRecords(purchases);
   };
 
-  // Calculate revenue from completed orders
+  // Calculate revenue from completed and delivered orders
   const totalRevenue = useMemo(() => {
-    const completedOrders = orders.filter(o => o.status === OrderStatus.COMPLETED);
+    const completedOrders = orders.filter(o => 
+      o.status === OrderStatus.COMPLETED || o.status === OrderStatus.DELIVERED
+    );
     return completedOrders.reduce((total, order) => {
       return total + order.items.reduce((sum, item) => {
         const product = products.find(p => p.id === item.productId);
@@ -51,7 +53,9 @@ const CashFlowView: React.FC<CashFlowViewProps> = ({ orders, products }) => {
     }> = [];
 
     // Add revenue transactions
-    const completedOrders = orders.filter(o => o.status === OrderStatus.COMPLETED);
+    const completedOrders = orders.filter(o => 
+      o.status === OrderStatus.COMPLETED || o.status === OrderStatus.DELIVERED
+    );
     completedOrders.forEach(order => {
       const orderTotal = order.items.reduce((sum, item) => {
         const product = products.find(p => p.id === item.productId);
